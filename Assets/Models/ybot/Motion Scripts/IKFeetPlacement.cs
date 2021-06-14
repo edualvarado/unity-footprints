@@ -107,6 +107,7 @@ public class IKFeetPlacement : MonoBehaviour
 
     }
 
+    /*
     private void CheckFeetAreGrounded()
     {
         if (!isRightFootGrounded)
@@ -131,6 +132,29 @@ public class IKFeetPlacement : MonoBehaviour
             {
                 isRightFootGrounded = false;
             }
+        }
+    }
+    */
+
+    private void CheckFeetAreGrounded()
+    {
+  
+        if (Physics.CheckSphere(groundCheckerLeftFoot.position, feetToGroundDistance, environmentLayer, QueryTriggerInteraction.Ignore) || Physics.CheckSphere(groundCheckerLeftFootBack.position, feetToGroundDistance, environmentLayer, QueryTriggerInteraction.Ignore))
+        {
+            isLeftFootGrounded = true;
+        }
+        else
+        {
+            isLeftFootGrounded = false;
+        }
+        
+        if (Physics.CheckSphere(groundCheckerRightFoot.position, feetToGroundDistance, environmentLayer, QueryTriggerInteraction.Ignore) || Physics.CheckSphere(groundCheckerRightFootBack.position, feetToGroundDistance, environmentLayer, QueryTriggerInteraction.Ignore))
+        {
+            isRightFootGrounded = true;
+        }
+        else
+        {
+            isRightFootGrounded = false;
         }
     }
 

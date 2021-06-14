@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(Brush), true)]
+[CustomEditor(typeof(BrushPhysicalFootprint), true)]
 
-public class BrushEditor : Editor
+public class BrushEditorPhysicalFootprint : Editor
 {
     private static GUIStyle ToggleButtonStyleNormal = null;
     private static GUIStyle ToggleButtonStyleToggled = null;
 
 	public override void OnInspectorGUI()
 	{
-		Brush myBrush = (Brush)target;
+		BrushPhysicalFootprint myBrush = (BrushPhysicalFootprint)target;
 		if (myBrush.IsActive())
 			DrawDefaultInspector();
 

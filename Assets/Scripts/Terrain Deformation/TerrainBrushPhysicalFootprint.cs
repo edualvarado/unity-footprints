@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class TerrainBrush : Brush
+public abstract class TerrainBrushPhysicalFootprint : BrushPhysicalFootprint
 {
     public override void CallFootprint(float xLeft, float zLeft, float xRight, float zRight)
     {
@@ -21,5 +21,4 @@ public abstract class TerrainBrush : Brush
     {
         DrawFootprint((int)xLeft, (int)zLeft, (int)xRight, (int)zRight);
     }
-
 }

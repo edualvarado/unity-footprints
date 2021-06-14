@@ -6,6 +6,7 @@ TagManager:
   tags:
   - RightFoot
   - LeftFoot
+  - Terrain
   layers:
   - Default
   - TransparentFX
