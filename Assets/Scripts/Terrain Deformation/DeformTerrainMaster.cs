@@ -80,10 +80,10 @@ public class DeformTerrainMaster : MonoBehaviour
     public float offset = 0.5f;
 
     [Header("Smooth - STILL TO DO")]
-    public bool smoothAll;
-    public float smoothTimeInterval = 0.5f;
-    public float smoothSigma = 1f;
-    public float elapsed = 0f;
+    //public bool smoothAll;
+    //public float smoothTimeInterval = 0.5f;
+    //public float smoothSigma = 1f;
+    //public float elapsed = 0f;
 
     // Types of brushes
     private BrushPhysicalFootprint brushPhysicalFootprint;
@@ -98,6 +98,14 @@ public class DeformTerrainMaster : MonoBehaviour
     private float[,] heightmap_data;
     private float[,] heightmap_data_constant;
     private float[,] heightmap_data_filtered;
+
+    // Terrain Materials
+    private double youngModulusSnow = 200000;
+    private float timeSnow = 0.2f;
+    private double youngModulusDrySand = 600000;
+    private float timeDrySand = 0.3f;
+    private double youngModulusMud = 350000;
+    private float timeMud = 0.8f;
 
     // Additional
     private bool oldIsMoving = false;
@@ -139,7 +147,12 @@ public class DeformTerrainMaster : MonoBehaviour
     {
         // Extract terrain information
         if (!terrain)
-            terrain = Terrain.activeTerrain;
+        {
+            //terrain = Terrain.activeTerrain;
+            terrain = myBipedalCharacter.GetComponent<RigidBodyControllerSimpleAnimator>().currentTerrain;
+            Debug.Log("[INFO] Main terrain: " + terrain.name);
+        }
+
         terrain_collider = terrain.GetComponent<Collider>();
         terrain_data = terrain.terrainData;
         terrain_size = terrain_data.size;
@@ -158,7 +171,7 @@ public class DeformTerrainMaster : MonoBehaviour
         _anim = myBipedalCharacter.GetComponent<Animator>();
 
         // Time elapsed -> TODO: Smoothing
-        elapsed = 0f;
+        //elapsed = 0f;
 
         // Old Feet Y-component position
         oldIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
@@ -171,6 +184,36 @@ public class DeformTerrainMaster : MonoBehaviour
     {
         //       Initial Information       //
         // =============================== //
+
+        // Define type of terrain where we are
+        if (brushPhysicalFootprint)
+        {
+            if (terrain.CompareTag("Snow"))
+                DefineSnow();
+            else if (terrain.CompareTag("Dry Sand"))
+                DefineDrySand();
+            else if (terrain.CompareTag("Mud"))
+                DefineMud();
+            else
+                DefineDefault();
+        }
+
+        // If we change the terrain, we change the data as well - both must have different GameObject names
+        if (terrain.name != myBipedalCharacter.GetComponent<RigidBodyControllerSimpleAnimator>().currentTerrain.name)
+        {
+            // Extract terrain information
+            terrain = myBipedalCharacter.GetComponent<RigidBodyControllerSimpleAnimator>().currentTerrain;
+            Debug.Log("[INFO] Updating to new terrain: " + terrain.name);
+
+            terrain_collider = terrain.GetComponent<Collider>();
+            terrain_data = terrain.terrainData;
+            terrain_size = terrain_data.size;
+            heightmap_width = terrain_data.heightmapResolution;
+            heightmap_height = terrain_data.heightmapResolution;
+            heightmap_data = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
+            heightmap_data_constant = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
+            heightmap_data_filtered = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
+        }
 
         // Saving other variables for debugging purposes
         heightIKLeft = _feetPlacement.LeftFootIKPosition.y;
@@ -445,6 +488,28 @@ public class DeformTerrainMaster : MonoBehaviour
             oldIsMoving = isMoving;
             provCounter = 0;
         }
+    }
+
+    public void DefineSnow()
+    {
+        brushPhysicalFootprint.YoungM = youngModulusSnow;
+        contactTime = timeSnow;
+    }
+
+    public void DefineDrySand()
+    {
+        brushPhysicalFootprint.YoungM = youngModulusDrySand;
+        contactTime = timeDrySand;
+    }
+
+    public void DefineMud()
+    {
+        brushPhysicalFootprint.YoungM = youngModulusMud;
+        contactTime = timeMud;
+    }
+    public void DefineDefault()
+    {
+        brushPhysicalFootprint.YoungM = 750000;
     }
 
     //      Getters       //

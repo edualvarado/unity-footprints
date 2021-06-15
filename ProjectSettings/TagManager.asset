@@ -7,6 +7,9 @@ TagManager:
   - RightFoot
   - LeftFoot
   - Terrain
+  - Snow
+  - Dry Sand
+  - Mud
   layers:
   - Default
   - TransparentFX

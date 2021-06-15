@@ -28,6 +28,8 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
     public bool _isGrounded = true;
     public float GroundDistance = 0.2f;
     public LayerMask Ground;
+    [Tooltip("Important: You need to put the terrain initially in the inspector")]
+    public Terrain currentTerrain;
 
     [Header("Animation")]
     public Animator _anim;
@@ -67,7 +69,20 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
 
     }
 
-    void Update()
+    private void OnCollisionEnter(Collision collision)
+    {
+
+        Debug.Log("Collision: " + collision.gameObject.name);
+        // Get the current terrain where the character is
+        currentTerrain = collision.gameObject.GetComponent<Terrain>();
+    }
+
+    //***
+    // ALL MOVEMENT SHOULD GO TO FIXED UPDATE!!! 
+    //***
+
+    // THIS WAS CHANGED FROM UPDATE TO FIXED UPDATE!
+    void FixedUpdate()
     {
         if (applyChangeSpeedTerrain)
         {
@@ -136,7 +151,7 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
         _anim.SetFloat("InputX", _inputs.x, 0.0f, Time.deltaTime);
         _anim.SetFloat("InputZ", _inputs.z, 0.0f, Time.deltaTime);
 
-        _inputs.Normalize();
+        //_inputs.Normalize();
         inputMagnitude = _inputs.sqrMagnitude;
 
         _anim.SetFloat("InputMagnitude", inputMagnitude, 0.0f, Time.deltaTime);
@@ -156,50 +171,55 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
         */
     }
 
-    void FixedUpdate()
-    {
-        // Need to apply movement in FixedUpdate
-        if (applyTransformPosition)
-        {
-            transform.position += moveDirection * moveSpeed * Time.fixedDeltaTime;
-        }
+    //***
+    // ALL MOVEMENT SHOULD GO TO FIXED UPDATE!!! 
+    //***
 
-        if (moveForwardOnly)
-        {
-            Camera.main.transform.rotation = Quaternion.identity;
-            transform.position += transform.forward * _inputs.z * moveSpeed * Time.fixedDeltaTime;
-        }
+    //void FixedUpdate()
+    //{
+    //    // Need to apply movement in FixedUpdate
+    //    if (applyTransformPosition)
+    //    {
+    //        transform.position += moveDirection * moveSpeed * Time.fixedDeltaTime;
+    //    }
 
-        // We don't need to push the RB - root motion moves the character though animations.
-        if (applyMove)
-            _body.MovePosition(_body.position + _inputs * moveSpeed * Time.fixedDeltaTime);
+    //    if (moveForwardOnly)
+    //    {
+    //        Camera.main.transform.rotation = Quaternion.identity;
+    //        transform.position += transform.forward * _inputs.z * moveSpeed * Time.fixedDeltaTime;
+    //    }
 
-        /*
-         * Use Rigidbody.MoveRotation to rotate a Rigidbody, complying with the Rigidbody's interpolation setting.
-         * If Rigidbody interpolation is enabled on the Rigidbody, calling Rigidbody.MoveRotation will resulting in a smooth transition between the two rotations in any intermediate frames rendered.
-         * This should be used if you want to continuously rotate a rigidbody in each FixedUpdate.
-         */
-        if (applyRotation)
-        {
-            timer += Time.deltaTime;
+    //    // We don't need to push the RB - root motion moves the character though animations.
+    //    if (applyMove)
+    //        _body.MovePosition(_body.position + _inputs * moveSpeed * Time.fixedDeltaTime);
 
-            Quaternion deltaRotation = Quaternion.Euler(signRotation * m_EulerAngleVelocity * Time.deltaTime);
-            _body.MoveRotation(_body.rotation * deltaRotation);
+    //    /*
+    //     * Use Rigidbody.MoveRotation to rotate a Rigidbody, complying with the Rigidbody's interpolation setting.
+    //     * If Rigidbody interpolation is enabled on the Rigidbody, calling Rigidbody.MoveRotation will resulting in a smooth transition between the two rotations in any intermediate frames rendered.
+    //     * This should be used if you want to continuously rotate a rigidbody in each FixedUpdate.
+    //     */
+    //    if (applyRotation)
+    //    {
+    //        timer += Time.deltaTime;
 
-            if (timer > 1)
-            {
-                timer = 0f;
-                signRotation = -signRotation;
-            }
-        }
+    //        Quaternion deltaRotation = Quaternion.Euler(signRotation * m_EulerAngleVelocity * Time.deltaTime);
+    //        _body.MoveRotation(_body.rotation * deltaRotation);
 
-        /*
-         * Adds a torque to the rigidbody.
-         * Force can be applied only to an active rigidbody. If a GameObject is inactive, AddTorque has no effect.
-         */
-        if (applyTorque)
-        {
-            _body.AddTorque(torque * transform.up);
-        }
-    }
+    //        if (timer > 1)
+    //        {
+    //            timer = 0f;
+    //            signRotation = -signRotation;
+    //        }
+    //    }
+
+    //    /*
+    //     * Adds a torque to the rigidbody.
+    //     * Force can be applied only to an active rigidbody. If a GameObject is inactive, AddTorque has no effect.
+    //     */
+    //    if (applyTorque)
+    //    {
+    //        _body.AddTorque(torque * transform.up);
+    //    }
+    //}
+
 }

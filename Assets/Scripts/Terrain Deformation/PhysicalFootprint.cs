@@ -18,7 +18,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
     [Header("Deformation - Debug")]
     public bool showGridDebugLeft = false;
-    public bool showGridDebugRigth = false;
+    public bool showGridDebugRight = false;
     public bool printTerrainInformation = false;
     public bool printDeformationInformation = false;
 
@@ -47,7 +47,8 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public float pressureRight;
 
     [Header("Terrain Deformation - Settings")]
-    [Range(100000, 10000000)] public double youngModulusPa = 1000000;
+    [Range(100000, 1000000)] public double youngModulus = 1000000;
+    public bool usePrefabGround = false;
     public float originaLength = 1f;
 
     [Header("Terrain Deformation - Info")]
@@ -58,11 +59,23 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     private double oldHeightCellDisplacementYoungLeft = 0f;
     private double oldHeightCellDisplacementYoungRight = 0f;
 
-    [Header("Filter - STILL TO DO")]
-    public bool applyPostFilter = false;
-    public bool applyPreFilterLeft = false;
-    public bool applyPreFilterRight = false;
-    [Range(0, 5)] public int gridSizeKernel = 1;
+    [Header("Filter")]
+    public bool applyFilterLeft = false;
+    public bool applyFilterRight = false;
+    public int filterIterationsLeftFoot = 2;
+    public int filterIterationsRightFoot = 2;
+    public int marginAroundGrid = 3;
+    public bool testSmooth = false;
+    private int filterIterationsLeftCounter = 0;
+    private int filterIterationsRightCounter = 0;
+    private bool isFilteredLeft = false;
+    private bool isFilteredRight = false;
+
+    // Others for filtering
+    [Range(0, 5)] private int gridSizeKernel = 1;
+    //public bool applyPostFilter = false;
+    //public bool applyPreFilterLeft = false;
+    //public bool applyPreFilterRight = false;
 
     // Others - Not used
     private float[,] heightMapLeft;
@@ -86,6 +99,12 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
         //       Initial Declarations      //
         // =============================== //
+
+        //Test
+        if (usePrefabGround)
+        {
+            youngModulus = YoungM;
+        }
 
         // Reset counter hits
         counterHitsLeft = 0;
@@ -162,12 +181,12 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 {
                     counterHitsRight++;
 
-                    if (showGridDebugRigth)
+                    if (showGridDebugRight)
                         Debug.DrawRay(rayGridWorldRight, Vector3.up * rayDistance, Color.blue);
                 }
                 else
                 {
-                    if (showGridDebugRigth)
+                    if (showGridDebugRight)
                         Debug.DrawRay(rayGridWorldRight, Vector3.up * rayDistance, Color.red);
                 }
             }
@@ -221,17 +240,17 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         // The decrement will depend also on the ContactTime used to calculate the corresponding force
         // As for the area, we keep the maximum value
 
-        oldHeightCellDisplacementYoungLeft = pressureLeft * (originaLength / (youngModulusPa));
+        oldHeightCellDisplacementYoungLeft = pressureLeft * (originaLength / (youngModulus));
         if (oldHeightCellDisplacementYoungLeft >= heightCellDisplacementYoungLeft)
         {
-            heightCellDisplacementYoungLeft = pressureLeft * (originaLength / youngModulusPa);
+            heightCellDisplacementYoungLeft = pressureLeft * (originaLength / youngModulus);
 
         }
 
-        oldHeightCellDisplacementYoungRight = pressureRight * (originaLength / (youngModulusPa));
+        oldHeightCellDisplacementYoungRight = pressureRight * (originaLength / (youngModulus));
         if (oldHeightCellDisplacementYoungRight >= heightCellDisplacementYoungRight)
         {
-            heightCellDisplacementYoungRight = pressureRight * (originaLength / youngModulusPa);
+            heightCellDisplacementYoungRight = pressureRight * (originaLength / youngModulus);
         }
 
         // Given the entire deformation in Y, we calculate the corresponding frame-based deformation based on the frame-time.
@@ -257,11 +276,61 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         if (IsRightFootGrounded)
         {
             StartCoroutine(DecreaseTerrainRight(heightMapRight, heightMapRightBool, xRight, zRight));
+
         }
         else if(!IsRightFootGrounded)
         {
             heightCellDisplacementYoungRight = 0;
             StopAllCoroutines();
+        }
+
+        //        Apply Smoothing        //
+        // =============================== //
+
+        if (applyFilterLeft)
+        {
+            // Provisional: When do we smooth?
+            if (IsLeftFootGrounded && !IsRightFootGrounded)
+            {
+                if (!isFilteredLeft)
+                {
+                    NewFilterHeightMap(xLeft, zLeft, heightMapLeft);
+                    filterIterationsLeftCounter++;
+                }
+
+                if (filterIterationsLeftCounter >= filterIterationsLeftFoot)
+                {
+                    isFilteredLeft = true;
+                }
+            }
+            else
+            {
+                isFilteredLeft = false;
+                filterIterationsLeftCounter = 0;
+            }
+        }
+
+        if (applyFilterRight)
+        {
+            // Provisional: When do we smooth?
+            if (IsRightFootGrounded && !IsLeftFootGrounded)
+            {
+                if (!isFilteredRight)
+                {
+                    NewFilterHeightMap(xRight, zRight, heightMapRight);
+                    filterIterationsRightCounter++;
+                }
+
+                if (filterIterationsRightCounter >= filterIterationsRightFoot)
+                {
+                    isFilteredRight = true;
+                }
+            }
+            else
+            {
+                isFilteredRight = false;
+                filterIterationsRightCounter = 0;
+            }
         }
     }
 
@@ -305,13 +374,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             }
         }
 
-        // 2. Gaussian pre-filter for Left Foot (To improve)
-        if (applyPreFilterLeft)
-        {
-            heightMapLeft = FilterBufferLeft(heightMapLeft, heightMapLeftBool);
-        }
-
-        // 3. Save terrain
+        // 2. Save terrain
         if (applyFootprints)
         {
             for (int zi = -gridSize; zi <= gridSize; zi++)
@@ -366,16 +429,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             }
         }
 
-        // 2. Gaussian pre-filter for Right Foot (To improve)
-        if (applyPreFilterRight)
-        {
-            heightMapRight = FilterBufferRight(heightMapRight, heightMapRightBool);
-        }
-
-        // 3. Save terrain
+        // 2. Save terrain
         if (applyFootprints)
         {
-
             for (int zi = -gridSize; zi <= gridSize; zi++)
             {
                 for (int xi = -gridSize; xi <= gridSize; xi++)
@@ -459,6 +515,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
     // Post-filter Methods
 
+    // Old Gaussian Blur
     private void FilterHeightmap(int zLeft, int xLeft, float[,] heightmap)
     {
         float[,] result = TerrainData.GetHeights(0, 0, (int)terrain.GridSize().x, (int)terrain.GridSize().z);
@@ -499,5 +556,43 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         }
 
         HeightMapFiltered = result;
+    }
+
+    // New Gaussian Blur (3x3) 
+    public void NewFilterHeightMap(int x, int z, float[,] heightMap)
+    {
+        float[,] heightMapFiltered = new float[2 * gridSize + 1, 2 * gridSize + 1];
+
+        for (int zi = -gridSize + marginAroundGrid; zi <= gridSize - marginAroundGrid; zi++)
+        {
+            for (int xi = -gridSize + marginAroundGrid; xi <= gridSize - marginAroundGrid; xi++)
+            {
+                if(!testSmooth)
+                {
+                    Vector3 rayGridLeft = new Vector3(x + xi, terrain.Get(x + xi, z + zi), z + zi);
+
+                    heightMapFiltered[zi + gridSize, xi + gridSize] =
+                        heightMap[zi + gridSize - 1, xi + gridSize - 1]
+                        + 2 * heightMap[zi + gridSize - 1, xi + gridSize]
+                        + 1 * heightMap[zi + gridSize - 1, xi + gridSize + 1]
+                        + 2 * heightMap[zi + gridSize, xi + gridSize - 1]
+                        + 4 * heightMap[zi + gridSize, xi + gridSize]
+                        + 2 * heightMap[zi + gridSize, xi + gridSize + 1]
+                        + 1 * heightMap[zi + gridSize + 1, xi + gridSize - 1]
+                        + 2 * heightMap[zi + gridSize + 1, xi + gridSize]
+                        + 1 * heightMap[zi + gridSize + 1, xi + gridSize + 1];
+
+                    heightMapFiltered[zi + gridSize, xi + gridSize] *= 1.0f / 16.0f;
+
+                    terrain.Set(rayGridLeft.x, rayGridLeft.z, (heightMapFiltered[zi + gridSize, xi + gridSize]));
+                }
+
+                else
+                {
+                    Vector3 rayGridLeft = new Vector3(x + xi, terrain.Get(x + xi, z + zi), z + zi);
+                    terrain.Set(rayGridLeft.x, rayGridLeft.z, (heightMap[zi + gridSize, xi + gridSize] + 0.04f));
+                }
+            }
+        }
     }
 }

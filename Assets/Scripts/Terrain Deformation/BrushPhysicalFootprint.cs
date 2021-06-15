@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 abstract public class BrushPhysicalFootprint : MonoBehaviour
 {
@@ -36,6 +34,9 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     private Vector3 totalForce;
     private Vector3 totalForceLeft;
     private Vector3 totalForceRight;
+
+    // Materials
+    public double youngM;
 
     #endregion
 
@@ -81,6 +82,17 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     }
 
     #endregion
+
+    #region Material Properties
+
+    public double YoungM
+    {
+        get { return youngM; }
+        set { youngM = value; }
+    }
+
+    #endregion
+
 
     #region Terrain Properties
 

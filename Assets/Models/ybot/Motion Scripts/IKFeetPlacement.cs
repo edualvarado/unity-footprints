@@ -50,7 +50,7 @@ public class IKFeetPlacement : MonoBehaviour
     [SerializeField] private LayerMask environmentLayer;
     [SerializeField] private float pelvisOffset = 0f;
     [Range(0, 1f)] [SerializeField] private float pelvisUpAndDownSpeed = 0.3f;
-    [Range(0, 1f)] [SerializeField] private float feetToIKPositionSpeed = 0.5f;
+    [Range(0, 1f)] [SerializeField] private float feetToIKPositionSpeed = 0.2f;
 
     [Header("Individual Feet Grounder")]
     public bool isLeftFootGrounded = false;
