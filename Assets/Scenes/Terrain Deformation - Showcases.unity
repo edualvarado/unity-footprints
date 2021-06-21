@@ -471,7 +471,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 370383752}
-  m_LocalRotation: {x: 0.12398983, y: 0.48852605, z: -0.07036545, w: 0.8608238}
+  m_LocalRotation: {x: 0.12398983, y: 0.48852602, z: -0.070365444, w: 0.8608238}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -575,7 +575,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 537267395}
-  m_LocalRotation: {x: 0.15517737, y: 0.48564756, z: -0.08806469, w: 0.85575175}
+  m_LocalRotation: {x: 0.15517737, y: 0.4856476, z: -0.088064685, w: 0.85575175}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -928,7 +928,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShowDebugText: 0
-  m_ShowCameraFrustum: 1
+  m_ShowCameraFrustum: 0
   m_IgnoreTimeScale: 0
   m_WorldUpOverride: {fileID: 0}
   m_UpdateMethod: 2
@@ -1466,9 +1466,20 @@ MonoBehaviour:
   totalForceFoot: {x: 0, y: 0, z: 0}
   totalForceLeftFoot: {x: 0, y: 0, z: 0}
   totalForceRightFoot: {x: 0, y: 0, z: 0}
+  maxTotalForceLeftFootZ: 0
+  maxTotalForceLeftFootZOld: 0
+  minTotalForceLeftFootZ: 0
+  minTotalForceLeftFootZOld: 0
   timePassed: 0
   contactTime: 0.1
   offset: 0.5
+  useTerrainPrefabs: 0
+  youngModulusSnow: 200000
+  timeSnow: 0.2
+  youngModulusDrySand: 900000
+  timeDrySand: 0.4
+  youngModulusMud: 450000
+  timeMud: 0.8
 --- !u!114 &1758997916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1481,7 +1492,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90e84f39b20dcf046805f9cebb312b16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  youngM: 0
   applyFootprints: 0
   showGridDebugLeft: 0
   showGridDebugRight: 0
@@ -1500,7 +1510,6 @@ MonoBehaviour:
   pressureLeft: 0
   pressureRight: 0
   youngModulus: 1000000
-  usePrefabGround: 0
   originaLength: 1
   heightCellDisplacementYoungLeft: 0
   heightCellDisplacementYoungRight: 0
@@ -1534,6 +1543,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 793392221, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 793392221, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.06
+      objectReference: {fileID: 0}
+    - target: {fileID: 851159031, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.06
+      objectReference: {fileID: 0}
+    - target: {fileID: 980799444, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 980799444, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.06
+      objectReference: {fileID: 0}
+    - target: {fileID: 1675414305, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.06
+      objectReference: {fileID: 0}
     - target: {fileID: 5129985756030307204, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
       propertyPath: m_Name
       value: Human
@@ -1590,6 +1623,10 @@ PrefabInstance:
       propertyPath: currentTerrain
       value: 
       objectReference: {fileID: 1758997913}
+    - target: {fileID: 6670947232552304507, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
+      propertyPath: blockCamera
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
 --- !u!1 &5603148222835410440 stripped

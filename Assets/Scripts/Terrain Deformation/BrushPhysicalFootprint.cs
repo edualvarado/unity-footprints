@@ -36,7 +36,8 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     private Vector3 totalForceRight;
 
     // Materials
-    public double youngM;
+    private bool useTerrainPrefabs;
+    private double youngM;
 
     #endregion
 
@@ -123,6 +124,12 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     #endregion
 
     #region Force Properties
+
+    public bool UseTerrainPrefabs
+    {
+        get { return useTerrainPrefabs; }
+        set { useTerrainPrefabs = value; }
+    }
 
     public float ContactTime
     {
@@ -226,6 +233,9 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         // Are the feet grounded?
         IsLeftFootGrounded = terrain.isLeftFootGrounded;
         IsRightFootGrounded = terrain.isRightFootGrounded;
+
+        // Get if we are using prefabs option
+        UseTerrainPrefabs = terrain.useTerrainPrefabs;
     }
 
     public void Deactivate()

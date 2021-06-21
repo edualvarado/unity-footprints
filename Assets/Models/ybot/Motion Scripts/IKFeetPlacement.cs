@@ -53,6 +53,7 @@ public class IKFeetPlacement : MonoBehaviour
     [Range(0, 1f)] [SerializeField] private float feetToIKPositionSpeed = 0.2f;
 
     [Header("Individual Feet Grounder")]
+    public bool drawSensorRayGrounder = false;
     public bool isLeftFootGrounded = false;
     public bool isRightFootGrounded = false;
     public Transform groundCheckerLeftFootBack;
@@ -155,6 +156,14 @@ public class IKFeetPlacement : MonoBehaviour
         else
         {
             isRightFootGrounded = false;
+        }
+
+        if(drawSensorRayGrounder)
+        {
+            Debug.DrawRay(groundCheckerLeftFoot.position, -Vector3.up * feetToGroundDistance, Color.white);
+            Debug.DrawRay(groundCheckerLeftFootBack.position, -Vector3.up * feetToGroundDistance, Color.white);
+            Debug.DrawRay(groundCheckerRightFoot.position, -Vector3.up * feetToGroundDistance, Color.white);
+            Debug.DrawRay(groundCheckerRightFootBack.position, -Vector3.up * feetToGroundDistance, Color.white);
         }
     }
 

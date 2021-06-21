@@ -72,6 +72,16 @@ public class DeformTerrainMaster : MonoBehaviour
     public Vector3 totalForceLeftFoot;
     public Vector3 totalForceRightFoot;
 
+    [Header("Max and Min Feet Forces")]
+    public float minTotalForceLeftFootZ = 0f;
+    public float maxTotalForceLeftFootZ = 0f;
+    public float minTotalForceRightFootZ = 0f;
+    public float maxTotalForceRightFootZ = 0f;
+    private float minTotalForceLeftFootZOld = 0f;
+    private float maxTotalForceLeftFootZOld = 0f;
+    private float minTotalForceRightFootZOld = 0f;
+    private float maxTotalForceRightFootZOld = 0f;
+
     [Header("Terrain Deformation - Contact Time")]
     public float timePassed = 0f;
     [Tooltip("Time that the terrain requires to absorve the force from the hitting foot. More time results in a smaller require force. On the other hand, for less time, the terrain requires a larger force to stop the foot.")]
@@ -79,11 +89,14 @@ public class DeformTerrainMaster : MonoBehaviour
     [Tooltip("Small delay, sometimes needed, to give the system enough time to perform the deformation.")]
     public float offset = 0.5f;
 
-    [Header("Smooth - STILL TO DO")]
-    //public bool smoothAll;
-    //public float smoothTimeInterval = 0.5f;
-    //public float smoothSigma = 1f;
-    //public float elapsed = 0f;
+    [Header("Terrain Prefabs")]
+    public bool useTerrainPrefabs = false;
+    public double youngModulusSnow = 200000;
+    public float timeSnow = 0.2f;
+    public double youngModulusDrySand = 600000;
+    public float timeDrySand = 0.3f;
+    public double youngModulusMud = 350000;
+    public float timeMud = 0.8f;
 
     // Types of brushes
     private BrushPhysicalFootprint brushPhysicalFootprint;
@@ -98,14 +111,6 @@ public class DeformTerrainMaster : MonoBehaviour
     private float[,] heightmap_data;
     private float[,] heightmap_data_constant;
     private float[,] heightmap_data_filtered;
-
-    // Terrain Materials
-    private double youngModulusSnow = 200000;
-    private float timeSnow = 0.2f;
-    private double youngModulusDrySand = 600000;
-    private float timeDrySand = 0.3f;
-    private double youngModulusMud = 350000;
-    private float timeMud = 0.8f;
 
     // Additional
     private bool oldIsMoving = false;
@@ -188,14 +193,17 @@ public class DeformTerrainMaster : MonoBehaviour
         // Define type of terrain where we are
         if (brushPhysicalFootprint)
         {
-            if (terrain.CompareTag("Snow"))
-                DefineSnow();
-            else if (terrain.CompareTag("Dry Sand"))
-                DefineDrySand();
-            else if (terrain.CompareTag("Mud"))
-                DefineMud();
-            else
-                DefineDefault();
+            if (useTerrainPrefabs)
+            {
+                if (terrain.CompareTag("Snow"))
+                    DefineSnow();
+                else if (terrain.CompareTag("Dry Sand"))
+                    DefineDrySand();
+                else if (terrain.CompareTag("Mud"))
+                    DefineMud();
+                else
+                    DefineDefault();
+            }
         }
 
         // If we change the terrain, we change the data as well - both must have different GameObject names
@@ -258,24 +266,24 @@ public class DeformTerrainMaster : MonoBehaviour
         // Calculate Velocity for the feet //
         // =============================== //
 
-        newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
-        newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
-        var mediaLeft = (newIKLeftPosition - oldIKLeftPosition);
-        var mediaRight = (newIKRightPosition - oldIKRightPosition);
+        //newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
+        //newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+        //var mediaLeft = (newIKLeftPosition - oldIKLeftPosition);
+        //var mediaRight = (newIKRightPosition - oldIKRightPosition);
 
-        feetSpeedLeft = new Vector3((mediaLeft.x / Time.deltaTime), (mediaLeft.y / Time.deltaTime), (mediaLeft.z / Time.deltaTime));
-        feetSpeedRight = new Vector3((mediaRight.x / Time.deltaTime), (mediaRight.y / Time.deltaTime), (mediaRight.z / Time.deltaTime));
+        //feetSpeedLeft = new Vector3((mediaLeft.x / Time.deltaTime), (mediaLeft.y / Time.deltaTime), (mediaLeft.z / Time.deltaTime));
+        //feetSpeedRight = new Vector3((mediaRight.x / Time.deltaTime), (mediaRight.y / Time.deltaTime), (mediaRight.z / Time.deltaTime));
 
-        oldIKLeftPosition = newIKLeftPosition;
-        oldIKRightPosition = newIKRightPosition;
+        //oldIKLeftPosition = newIKLeftPosition;
+        //oldIKRightPosition = newIKRightPosition;
 
-        newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
-        newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+        //newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
+        //newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
 
-        if (drawVelocities)
-        {
-            DrawForce.ForDebug3D(newIKLeftPosition, -feetSpeedLeft, Color.cyan, 0.0025f);
-        }
+        //if (drawVelocities)
+        //{
+        //    DrawForce.ForDebug3D(newIKLeftPosition, -feetSpeedLeft, Color.cyan, 0.0025f);
+        //}
 
         //  Calculate Forces for the feet  //
         // =============================== //
@@ -319,6 +327,13 @@ public class DeformTerrainMaster : MonoBehaviour
             feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
             feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
 
+            // TEST - Take only inpulses when hitting the ground
+            //if (feetImpulseLeft.y <= 0f)
+            //    feetImpulseLeft = new Vector3(feetImpulseLeft.x, 0f, feetImpulseLeft.z);
+
+            //if (feetImpulseRight.y <= 0f)
+            //    feetImpulseRight = new Vector3(feetImpulseRight.x, 0f, feetImpulseRight.z);
+
             //--------------
 
             // Net force exerted by ground to each foot - Calculated using Impulse and Contact Time
@@ -351,6 +366,16 @@ public class DeformTerrainMaster : MonoBehaviour
             {
                 DrawForce.ForDebug3D(centerGridRightFootHeight, momentumForceRight, Color.red, 0.0025f);
             }
+
+            //if (drawMomentumForces && isMoving && isLeftFootGrounded)
+            //{
+            //    DrawForce.ForDebug3D(centerGridLeftFootHeight, momentumForceLeft, Color.red, 0.0025f);
+            //}
+
+            //if (drawMomentumForces && isMoving && isRightFootGrounded)
+            //{
+            //    DrawForce.ForDebug3D(centerGridRightFootHeight, momentumForceRight, Color.red, 0.0025f);
+            //}
 
             //--------------
 
@@ -385,13 +410,54 @@ public class DeformTerrainMaster : MonoBehaviour
                 }
             }
 
-
             //--------------
 
             // Reaction Force for the feet (3rd Newton Law)
             totalForceLeftFoot = -totalGRForceLeft;
             totalForceRightFoot = -totalGRForceRight;
             totalForceFoot = totalForceLeftFoot + totalForceRightFoot;
+
+            //--------------
+
+            // Save max/min values reached for the feet forces in Z
+            maxTotalForceLeftFootZOld = totalForceLeftFoot.z;
+            if(maxTotalForceLeftFootZOld > maxTotalForceLeftFootZ)
+            {
+                maxTotalForceLeftFootZ = maxTotalForceLeftFootZOld;
+            }
+            minTotalForceLeftFootZOld = totalForceLeftFoot.z;
+            if (minTotalForceLeftFootZOld < minTotalForceLeftFootZ)
+            {
+                minTotalForceLeftFootZ = minTotalForceLeftFootZOld;
+            }
+
+            // Reset Values
+            if (!isLeftFootGrounded)
+            {
+                maxTotalForceLeftFootZ = 0f;
+                minTotalForceLeftFootZ = 0f;
+            }
+
+            // Save max/min values reached for the feet forces in Z
+            maxTotalForceRightFootZOld = totalForceRightFoot.z;
+            if (maxTotalForceRightFootZOld > maxTotalForceRightFootZ)
+            {
+                maxTotalForceRightFootZ = maxTotalForceRightFootZOld;
+            }
+            minTotalForceRightFootZOld = totalForceRightFoot.z;
+            if (minTotalForceRightFootZOld < minTotalForceRightFootZ)
+            {
+                minTotalForceRightFootZ = minTotalForceRightFootZOld;
+            }
+
+            // Reset Values
+            if (!isRightFootGrounded)
+            {
+                maxTotalForceRightFootZ = 0f;
+                minTotalForceRightFootZ = 0f;
+            }
+
+            //--------------
 
             // Feet Forces are created when we hit the ground (that is, when the Y-component of the Momentum Force is positive)
             // Only when the feet rise up, Feet Forces do not exist. The muscle is the responsable to lift the foot up
@@ -412,6 +478,17 @@ public class DeformTerrainMaster : MonoBehaviour
                 {
                     DrawForce.ForDebug3D(centerGridRightFootHeight, totalForceRightFoot, Color.black, 0.0025f);
                 }
+
+                //if (drawFeetForces && isLeftFootGrounded)
+                //{
+                //    DrawForce.ForDebug3D(centerGridLeftFootHeight, totalForceLeftFoot, Color.black, 0.0025f);
+                //}
+
+                //if (drawFeetForces && isRightFootGrounded)
+                //{
+                //    DrawForce.ForDebug3D(centerGridRightFootHeight, totalForceRightFoot, Color.black, 0.0025f);
+                //}
+
             }
         }
 
@@ -487,6 +564,31 @@ public class DeformTerrainMaster : MonoBehaviour
             timePassed = 0f;
             oldIsMoving = isMoving;
             provCounter = 0;
+        }
+    }
+
+    public void FixedUpdate()
+    {
+        // Calculate Velocity for the feet //
+        // =============================== //
+
+        newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position; // Before: LeftFoot
+        newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+        var mediaLeft = (newIKLeftPosition - oldIKLeftPosition);
+        var mediaRight = (newIKRightPosition - oldIKRightPosition);
+
+        feetSpeedLeft = new Vector3((mediaLeft.x / Time.fixedDeltaTime), (mediaLeft.y / Time.fixedDeltaTime), (mediaLeft.z / Time.fixedDeltaTime));
+        feetSpeedRight = new Vector3((mediaRight.x / Time.fixedDeltaTime), (mediaRight.y / Time.fixedDeltaTime), (mediaRight.z / Time.fixedDeltaTime));
+
+        oldIKLeftPosition = newIKLeftPosition;
+        oldIKRightPosition = newIKRightPosition;
+
+        newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
+        newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+
+        if (drawVelocities)
+        {
+            DrawForce.ForDebug3D(newIKLeftPosition, -feetSpeedLeft, Color.cyan, 0.0025f);
         }
     }
 
