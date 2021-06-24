@@ -471,7 +471,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 370383752}
-  m_LocalRotation: {x: 0.12398983, y: 0.48852602, z: -0.070365444, w: 0.8608238}
+  m_LocalRotation: {x: 0.12398983, y: 0.48852605, z: -0.07036545, w: 0.8608238}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -575,7 +575,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 537267395}
-  m_LocalRotation: {x: 0.15517737, y: 0.4856476, z: -0.088064685, w: 0.85575175}
+  m_LocalRotation: {x: 0.15517738, y: 0.48564762, z: -0.08806469, w: 0.85575175}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1466,10 +1466,10 @@ MonoBehaviour:
   totalForceFoot: {x: 0, y: 0, z: 0}
   totalForceLeftFoot: {x: 0, y: 0, z: 0}
   totalForceRightFoot: {x: 0, y: 0, z: 0}
-  maxTotalForceLeftFootZ: 0
-  maxTotalForceLeftFootZOld: 0
   minTotalForceLeftFootZ: 0
-  minTotalForceLeftFootZOld: 0
+  maxTotalForceLeftFootZ: 0
+  minTotalForceRightFootZ: 0
+  maxTotalForceRightFootZ: 0
   timePassed: 0
   contactTime: 0.1
   offset: 0.5
@@ -1495,6 +1495,7 @@ MonoBehaviour:
   applyFootprints: 0
   showGridDebugLeft: 0
   showGridDebugRight: 0
+  showGridBumpDebug: 0
   printTerrainInformation: 0
   printDeformationInformation: 0
   gridSize: 10
@@ -1515,6 +1516,13 @@ MonoBehaviour:
   heightCellDisplacementYoungRight: 0
   displacementLeft: 0
   displacementRight: 0
+  offsetBumpGrid: 2
+  neighbourSearchArea: 1
+  neighbourCellsLeft: 0
+  neighbourCellsRight: 0
+  neighbourAreaTotalLeft: 0
+  neighbourAreaTotalRight: 0
+  deformTakingPlaceLeft: 0
   applyFilterLeft: 0
   applyFilterRight: 0
   filterIterationsLeftFoot: 2
@@ -1549,7 +1557,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 793392221, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.06
+      value: 0.075
       objectReference: {fileID: 0}
     - target: {fileID: 851159031, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1561,7 +1569,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 980799444, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.06
+      value: 0.075
       objectReference: {fileID: 0}
     - target: {fileID: 1675414305, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
       propertyPath: m_LocalPosition.y

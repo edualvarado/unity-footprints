@@ -15,10 +15,12 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
     [Header("Physically-based Footprints Deformation")]
     public bool applyFootprints = false;
+    public bool applyBumps = false;
 
     [Header("Deformation - Debug")]
     public bool showGridDebugLeft = false;
     public bool showGridDebugRight = false;
+    public bool showGridBumpDebug = false;
     public bool printTerrainInformation = false;
     public bool printDeformationInformation = false;
 
@@ -68,6 +70,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public float neighbourAreaTotalRight;
     private float oldNeighbourAreaTotalLeft;
     private float oldNeighbourAreaTotalRight;
+    public bool deformTakingPlaceLeft = false;
 
     [Header("Filter")]
     public bool applyFilterLeft = false;
@@ -75,11 +78,12 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public int filterIterationsLeftFoot = 2;
     public int filterIterationsRightFoot = 2;
     public int marginAroundGrid = 3;
-    public bool testSmooth = false;
     private int filterIterationsLeftCounter = 0;
     private int filterIterationsRightCounter = 0;
     private bool isFilteredLeft = false;
     private bool isFilteredRight = false;
+    private bool applyFilterLeft2 = false;
+    private bool applyFilterRight2 = false;
 
     // Others for filtering
     [Range(0, 5)] private int gridSizeKernel = 1;
@@ -254,8 +258,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                                 {
                                     Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
                                     Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
-                                    Debug.DrawRay(rayGridWorldRight, Vector3.up * 0.4f, Color.yellow);
 
+                                    if(showGridBumpDebug)
+                                        Debug.DrawRay(rayGridWorldRight, Vector3.up * 0.2f, Color.yellow);
+
+                                    // Mark that cell as a countour point
                                     heightMapRightBool[zi + gridSize, xi + gridSize] = 1;
                                     break;
                                 }
@@ -285,8 +292,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                                 {
                                     Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
                                     Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
-                                    Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.4f, Color.yellow);
 
+                                    if(showGridBumpDebug)
+                                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.2f, Color.yellow);
+
+                                    // Mark that cell as a countour point
                                     heightMapLeftBool[zi + gridSize, xi + gridSize] = 1;
                                     break;
                                 }
@@ -402,9 +412,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             StopAllCoroutines();
         }
 
-        //        Apply Smoothing        //
+        //         Apply Smoothing         //
         // =============================== //
 
+        // First smoothing version
         if (applyFilterLeft)
         {
             // Provisional: When do we smooth?
@@ -467,10 +478,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 RaycastHit leftFootHit;
                 Ray upRayLeftFoot = new Ray(rayGridWorldLeft, Vector3.up);
 
-                // If hits the Left Foot, increase counter and add cell to be affected
-                if (LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance))
+                // If hits the Left Foot and the cell was classified with 2:
+                if (LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 2))
                 {
-                    // Cell contacting directly
+                    // Cell contacting directly - Decrease until limit reached
                     if (terrain.Get(rayGridLeft.x, rayGridLeft.z) >= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) - heightCellDisplacementYoungLeft)
                     {
                         heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) - (displacementLeft);
@@ -481,11 +492,52 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                     }
 
                 }
+                else if (!LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 1) && applyBumps)
+                {
+
+                    // If ray does not hit and is classified as neightbour, we create a bump.
+                    if (terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + 0.03f)
+                    {
+                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (0.01f);
+                    }
+                    else
+                    {
+                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z);
+                    }
+
+                    // If ray does not hit and is classified as neightbour, we create a bump.
+                    //heightMapLeft[zi + gridSize, xi + gridSize] = 1.02f;
+                }
                 else
                 {
-                    // No contact
+                    // If is out of reach
                     heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z);
                 }
+            }
+        }
+
+        // This version of smoothing, does not set the terrain, only filters (return) the new heightmap
+        // TODO - NOT WORKING YET - See function
+        if (applyFilterLeft2)
+        {
+            // Provisional: When do we smooth?
+            if (IsLeftFootGrounded && !IsRightFootGrounded)
+            {
+                if (!isFilteredLeft)
+                {
+                    heightMapLeft = NewFilterHeightMapReturn(xLeft, zLeft, heightMapLeft);
+                    filterIterationsLeftCounter++;
+                }
+
+                if (filterIterationsLeftCounter >= filterIterationsLeftFoot)
+                {
+                    isFilteredLeft = true;
+                }
+            }
+            else
+            {
+                isFilteredLeft = false;
+                filterIterationsLeftCounter = 0;
             }
         }
 
@@ -520,10 +572,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 RaycastHit rightFootHit;
                 Ray upRayRightFoot = new Ray(rayGridWorldRight, Vector3.up);
 
-                // If hits the Right Foot, increase counter and add cell to be affected
-                if (RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance))
+                // If hits the Right Foot and the cell was classified with 2:
+                if (RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 2))
                 {
-                    // Cell contacting directly
+                    // Cell contacting directly - Decrease until limit reached
                     if (terrain.Get(rayGridRight.x, rayGridRight.z) >= terrain.GetConstant(rayGridRight.x, rayGridRight.z) - heightCellDisplacementYoungRight)
                     {
                         heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) - (displacementRight);
@@ -533,11 +585,52 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                         heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z);
                     }
                 }
+                else if (!RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 1) && applyBumps)
+                {
+
+                    // If ray does not hit and is classified as neightbour, we create a bump.
+                    if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + 0.03f)
+                    {
+                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) + (0.01f);
+                    }
+                    else
+                    {
+                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z);
+                    }
+
+                    // If ray does not hit and is classified as neightbour, we create a bump.
+                    //heightMapLeft[zi + gridSize, xi + gridSize] = 1.02f;
+                }
                 else
                 {
-                    // No contact
+                    // If is out of reach
                     heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z);
                 }
+            }
+        }
+
+        // This version of smoothing, does not set the terrain, only filters (return) the new heightmap
+        // TODO - NOT WORKING YET - See function
+        if (applyFilterRight2)
+        {
+            // Provisional: When do we smooth?
+            if (IsRightFootGrounded && !IsLeftFootGrounded)
+            {
+                if (!isFilteredRight)
+                {
+                    heightMapRight = NewFilterHeightMapReturn(xRight, zRight, heightMapRight);
+                    filterIterationsRightCounter++;
+                }
+
+                if (filterIterationsRightCounter >= filterIterationsRightFoot)
+                {
+                    isFilteredRight = true;
+                }
+            }
+            else
+            {
+                isFilteredRight = false;
+                filterIterationsRightCounter = 0;
             }
         }
 
@@ -679,7 +772,38 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         {
             for (int xi = -gridSize + marginAroundGrid; xi <= gridSize - marginAroundGrid; xi++)
             {
-                if(!testSmooth)
+                Vector3 rayGridLeft = new Vector3(x + xi, terrain.Get(x + xi, z + zi), z + zi);
+
+                heightMapFiltered[zi + gridSize, xi + gridSize] =
+                    heightMap[zi + gridSize - 1, xi + gridSize - 1]
+                    + 2 * heightMap[zi + gridSize - 1, xi + gridSize]
+                    + 1 * heightMap[zi + gridSize - 1, xi + gridSize + 1]
+                    + 2 * heightMap[zi + gridSize, xi + gridSize - 1]
+                    + 4 * heightMap[zi + gridSize, xi + gridSize]
+                    + 2 * heightMap[zi + gridSize, xi + gridSize + 1]
+                    + 1 * heightMap[zi + gridSize + 1, xi + gridSize - 1]
+                    + 2 * heightMap[zi + gridSize + 1, xi + gridSize]
+                    + 1 * heightMap[zi + gridSize + 1, xi + gridSize + 1];
+
+                heightMapFiltered[zi + gridSize, xi + gridSize] *= 1.0f / 16.0f;
+
+                terrain.Set(rayGridLeft.x, rayGridLeft.z, (heightMapFiltered[zi + gridSize, xi + gridSize]));
+            }
+        }
+    }
+
+    // New Gaussian Blur (3x3) - Return (TODO STILL NOT WORK - Version 1 works fine, so skipping)
+    public float[,] NewFilterHeightMapReturn(int x, int z, float[,] heightMap)
+    {
+        float[,] heightMapFiltered = new float[2 * gridSize + 1, 2 * gridSize + 1];
+
+        for (int zi = -gridSize; zi <= gridSize; zi++)
+        {
+            for (int xi = -gridSize; xi <= gridSize; xi++)
+            {
+                // It avoids the offset or border
+                if((zi > -gridSize + marginAroundGrid) && (zi < gridSize - marginAroundGrid) &&
+                    (xi > -gridSize + marginAroundGrid) && (xi < gridSize - marginAroundGrid))
                 {
                     Vector3 rayGridLeft = new Vector3(x + xi, terrain.Get(x + xi, z + zi), z + zi);
 
@@ -696,15 +820,15 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
                     heightMapFiltered[zi + gridSize, xi + gridSize] *= 1.0f / 16.0f;
 
-                    terrain.Set(rayGridLeft.x, rayGridLeft.z, (heightMapFiltered[zi + gridSize, xi + gridSize]));
                 }
-
                 else
                 {
-                    Vector3 rayGridLeft = new Vector3(x + xi, terrain.Get(x + xi, z + zi), z + zi);
-                    terrain.Set(rayGridLeft.x, rayGridLeft.z, (heightMap[zi + gridSize, xi + gridSize] + 0.04f));
+                    heightMapFiltered[zi + gridSize, xi + gridSize] = heightMap[zi + gridSize, xi + gridSize];
                 }
+
             }
         }
+
+        return heightMapFiltered;
     }
 }
