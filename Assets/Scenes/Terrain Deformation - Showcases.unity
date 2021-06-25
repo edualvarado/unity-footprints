@@ -471,7 +471,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 370383752}
-  m_LocalRotation: {x: 0.12398983, y: 0.48852605, z: -0.07036545, w: 0.8608238}
+  m_LocalRotation: {x: 0.12398983, y: 0.48852602, z: -0.070365444, w: 0.8608238}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -575,7 +575,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 537267395}
-  m_LocalRotation: {x: 0.15517738, y: 0.48564762, z: -0.08806469, w: 0.85575175}
+  m_LocalRotation: {x: 0.15517737, y: 0.4856476, z: -0.088064685, w: 0.85575175}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1475,7 +1475,7 @@ MonoBehaviour:
   offset: 0.5
   useTerrainPrefabs: 0
   youngModulusSnow: 200000
-  timeSnow: 0.2
+  timeSnow: 8.78
   youngModulusDrySand: 900000
   timeDrySand: 0.4
   youngModulusMud: 450000
@@ -1493,6 +1493,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   applyFootprints: 0
+  applyBumps: 0
   showGridDebugLeft: 0
   showGridDebugRight: 0
   showGridBumpDebug: 0
@@ -1522,13 +1523,15 @@ MonoBehaviour:
   neighbourCellsRight: 0
   neighbourAreaTotalLeft: 0
   neighbourAreaTotalRight: 0
-  deformTakingPlaceLeft: 0
+  neighboursPositionsRight: []
+  neighboursPositionsLeft: []
+  neighboursWeightsRight: []
+  allSumCotRight: []
   applyFilterLeft: 0
   applyFilterRight: 0
   filterIterationsLeftFoot: 2
   filterIterationsRightFoot: 2
   marginAroundGrid: 3
-  testSmooth: 0
 --- !u!65 &2455106781847125998 stripped
 BoxCollider:
   m_CorrespondingSourceObject: {fileID: 2455106781847125998, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}

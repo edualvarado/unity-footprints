@@ -21,6 +21,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public bool showGridDebugLeft = false;
     public bool showGridDebugRight = false;
     public bool showGridBumpDebug = false;
+    public bool showGridBumpFrontBack = false;
     public bool printTerrainInformation = false;
     public bool printDeformationInformation = false;
 
@@ -70,7 +71,12 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public float neighbourAreaTotalRight;
     private float oldNeighbourAreaTotalLeft;
     private float oldNeighbourAreaTotalRight;
-    public bool deformTakingPlaceLeft = false;
+
+    [Header("Terrain Deformation - Bump Barycentric Coordinates")]
+    public List<Vector3> neighboursPositionsRightFront = new List<Vector3>(); // TEST
+    public List<Vector3> neighboursPositionsLeftFront = new List<Vector3>(); // TEST
+    public List<Vector3> neighboursPositionsRightBack = new List<Vector3>(); // TEST
+    public List<Vector3> neighboursPositionsLeftBack = new List<Vector3>(); // TEST
 
     [Header("Filter")]
     public bool applyFilterLeft = false;
@@ -125,6 +131,12 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         counterHitsRight = 0;
         neighbourCellsLeft = 0;
         neighbourCellsRight = 0;
+
+        // TEST
+        neighboursPositionsRightFront.Clear();
+        neighboursPositionsLeftFront.Clear();
+        neighboursPositionsRightBack.Clear();
+        neighboursPositionsLeftBack.Clear();
 
         // Heightmaps for each foot
         float[,] heightMapLeft = new float[2 * gridSize + 1, 2 * gridSize + 1];
@@ -259,7 +271,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                                     Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
                                     Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
 
-                                    if(showGridBumpDebug)
+                                    if (showGridBumpDebug)
                                         Debug.DrawRay(rayGridWorldRight, Vector3.up * 0.2f, Color.yellow);
 
                                     // Mark that cell as a countour point
@@ -314,15 +326,71 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             {
                 if (heightMapLeftBool[zi + gridSize, xi + gridSize] == 1)
                 {
+                    // Each neightbour cell in world space
+                    Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
+                    Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
+
+                    // Position of the neighbour relative to the foot
+                    Vector3 relativePos = rayGridWorldLeft - LeftFootCollider.transform.position;
+
+                    // Check if is in front/back of the foot
+                    if(Vector3.Dot(LeftFootCollider.transform.forward, relativePos) > 0.0f)
+                    {
+                        // Store the Vector3 positions in a dynamic array
+                        neighboursPositionsLeftFront.Add(rayGridWorldLeft);
+
+                        if (showGridBumpFrontBack)
+                            Debug.DrawRay(LeftFootCollider.transform.position, relativePos, Color.red);
+                    }
+                    else
+                    {
+                        // Store the Vector3 positions in a dynamic array
+                        neighboursPositionsLeftBack.Add(rayGridWorldLeft);
+                        
+                        if(showGridBumpFrontBack)
+                            Debug.DrawRay(LeftFootCollider.transform.position, relativePos, Color.blue);
+                    }
+
                     neighbourCellsLeft++;
                 }
 
                 if (heightMapRightBool[zi + gridSize, xi + gridSize] == 1)
                 {
+                    // Each neightbour cell in world space
+                    Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
+                    Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
+
+                    // Position of the neighbour relative to the foot
+                    Vector3 relativePos = rayGridWorldRight - RightFootCollider.transform.position;
+
+                    // Check if is in front/back of the foot
+                    if (Vector3.Dot(RightFootCollider.transform.forward, relativePos) > 0.0f)
+                    {
+                        // Store the Vector3 positions in a dynamic array
+                        neighboursPositionsRightFront.Add(rayGridWorldRight);
+
+                        if (showGridBumpFrontBack)
+                            Debug.DrawRay(RightFootCollider.transform.position, relativePos, Color.red);
+                    }
+                    else
+                    {
+                        // Store the Vector3 positions in a dynamic array
+                        neighboursPositionsRightBack.Add(rayGridWorldRight);
+
+                        if (showGridBumpFrontBack)
+                            Debug.DrawRay(RightFootCollider.transform.position, relativePos, Color.blue);
+                    }
+
                     neighbourCellsRight++;
                 }
             }
         }
+
+        // TEST - Barycentric Coordinates
+
+        //computeBarycentricCoordinatesRight(Vector3.zero, neighboursPositionsRight);
+
+        //
 
         // Calculate the neightbour area for each foot
         oldNeighbourAreaTotalLeft = ((neighbourCellsLeft) * areaCell);
@@ -831,4 +899,55 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
         return heightMapFiltered;
     }
+
+    // TEST - Calculate Barycentric Coordinates Right
+    /*
+    private void computeBarycentricCoordinatesRight(Vector3 center, List<Vector3> neighboursPositionsRight)
+    {
+        float weightSumRight = 0;
+
+        for (int i = 0; i < neighboursPositionsRight.Count; i++)
+        {
+            int prev = (i + neighboursPositionsRight.Count - 1) % neighboursPositionsRight.Count;
+            int next = (i + 1) % neighboursPositionsRight.Count;
+
+            allSumCotRight.Add(contangAnglePreviousRight(center, neighboursPositionsRight[i], neighboursPositionsRight[prev], i, prev) + contangAngleNextRight(center, neighboursPositionsRight[i], neighboursPositionsRight[next], i, next));
+            //allSumCotRight[i] = contangAnglePreviousRight(center, neighboursPositionsRight[i], neighboursPositionsRight[prev], i, prev) + contangAngleNextRight(center, neighboursPositionsRight[i], neighboursPositionsRight[next], i, next);
+
+            neighboursWeightsRight.Add(allSumCotRight[i] / Vector3.Distance(center, neighboursPositionsRight[i]));
+            weightSumRight += neighboursWeightsRight[i];
+        }
+
+        for (int i = 0; i < neighboursWeightsRight.Count; i++)
+        {
+            neighboursWeightsRight[i] /= weightSumRight;
+        }
+    }
+
+    private float contangAnglePreviousRight(Vector3 p, Vector3 j, Vector3 neighbour, int vertex, int vertex_neightbour)
+    {
+        var pj = p - j;
+        var bc = neighbour - j;
+
+        float angle = Mathf.Atan2(Vector3.Cross(pj, bc).magnitude, Vector3.Dot(pj, bc));
+        float angleCot = 1f / Mathf.Tan(angle);
+
+        //allAnglesPrevRight[vertex] = angle * Mathf.Rad2Deg;
+
+        return angleCot;
+    }
+
+    private float contangAngleNextRight(Vector3 p, Vector3 j, Vector3 neighbour, int vertex, int vertex_neightbour)
+    {
+        var pj = p - j;
+        var bc = neighbour - j;
+
+        float angle = Mathf.Atan2(Vector3.Cross(pj, bc).magnitude, Vector3.Dot(pj, bc));
+        float angleCot = 1f / Mathf.Tan(angle);
+
+        //allAnglesNextRight[vertex] = angle * Mathf.Rad2Deg;
+
+        return angleCot;
+    }
+    */
 }
