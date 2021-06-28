@@ -35,6 +35,12 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     private Vector3 totalForceLeft;
     private Vector3 totalForceRight;
 
+    // TEST
+    private float minTotalForceLeftFootZNorm;
+    private float maxTotalForceLeftFootZNorm;
+    private float minTotalForceRightFootZNorm;
+    private float maxTotalForceRightFootZNorm;
+
     // Materials
     private bool useTerrainPrefabs;
     private double youngM;
@@ -42,6 +48,30 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     #endregion
 
     #region Body Properties
+
+    public float MinTotalForceLeftFootZNorm
+    {
+        get { return minTotalForceLeftFootZNorm; }
+        set { minTotalForceLeftFootZNorm = value; }
+    }
+
+    public float MaxTotalForceLeftFootZNorm
+    {
+        get { return maxTotalForceLeftFootZNorm; }
+        set { maxTotalForceLeftFootZNorm = value; }
+    }
+
+    public float MinTotalForceRightFootZNorm
+    {
+        get { return minTotalForceRightFootZNorm; }
+        set { minTotalForceRightFootZNorm = value; }
+    }
+
+    public float MaxTotalForceRightFootZNorm
+    {
+        get { return maxTotalForceRightFootZNorm; }
+        set { maxTotalForceRightFootZNorm = value; }
+    }
 
     public float Mass
     {
@@ -229,6 +259,12 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         TotalForce = terrain.totalGRForce;
         TotalForceLeft = terrain.totalGRForceLeft;
         TotalForceRight = terrain.totalGRForceRight;
+
+        // TEST
+        MinTotalForceLeftFootZNorm = terrain.minTotalForceLeftFootZNorm;
+        MaxTotalForceLeftFootZNorm = terrain.maxTotalForceLeftFootZNorm;
+        MinTotalForceRightFootZNorm = terrain.minTotalForceRightFootZNorm;
+        MaxTotalForceRightFootZNorm = terrain.maxTotalForceRightFootZNorm;
 
         // Are the feet grounded?
         IsLeftFootGrounded = terrain.isLeftFootGrounded;

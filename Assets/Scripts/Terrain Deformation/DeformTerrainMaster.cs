@@ -77,6 +77,10 @@ public class DeformTerrainMaster : MonoBehaviour
     public float maxTotalForceLeftFootZ = 0f;
     public float minTotalForceRightFootZ = 0f;
     public float maxTotalForceRightFootZ = 0f;
+    public float minTotalForceLeftFootZNorm = 0f;
+    public float maxTotalForceLeftFootZNorm = 0f;
+    public float minTotalForceRightFootZNorm = 0f;
+    public float maxTotalForceRightFootZNorm = 0f; 
     private float minTotalForceLeftFootZOld = 0f;
     private float maxTotalForceLeftFootZOld = 0f;
     private float minTotalForceRightFootZOld = 0f;
@@ -424,11 +428,13 @@ public class DeformTerrainMaster : MonoBehaviour
             if(maxTotalForceLeftFootZOld > maxTotalForceLeftFootZ)
             {
                 maxTotalForceLeftFootZ = maxTotalForceLeftFootZOld;
+                maxTotalForceLeftFootZNorm = totalForceLeftFoot.normalized.z;
             }
             minTotalForceLeftFootZOld = totalForceLeftFoot.z;
             if (minTotalForceLeftFootZOld < minTotalForceLeftFootZ)
             {
                 minTotalForceLeftFootZ = minTotalForceLeftFootZOld;
+                minTotalForceLeftFootZNorm = totalForceLeftFoot.normalized.z;
             }
 
             // Reset Values
@@ -436,6 +442,8 @@ public class DeformTerrainMaster : MonoBehaviour
             {
                 maxTotalForceLeftFootZ = 0f;
                 minTotalForceLeftFootZ = 0f;
+                maxTotalForceLeftFootZNorm = 0f;
+                minTotalForceLeftFootZNorm = 0f;
             }
 
             // Save max/min values reached for the feet forces in Z
@@ -443,11 +451,14 @@ public class DeformTerrainMaster : MonoBehaviour
             if (maxTotalForceRightFootZOld > maxTotalForceRightFootZ)
             {
                 maxTotalForceRightFootZ = maxTotalForceRightFootZOld;
+                maxTotalForceRightFootZNorm = totalForceRightFoot.normalized.z;
+
             }
             minTotalForceRightFootZOld = totalForceRightFoot.z;
             if (minTotalForceRightFootZOld < minTotalForceRightFootZ)
             {
                 minTotalForceRightFootZ = minTotalForceRightFootZOld;
+                minTotalForceRightFootZNorm = totalForceRightFoot.normalized.z;
             }
 
             // Reset Values
@@ -455,6 +466,8 @@ public class DeformTerrainMaster : MonoBehaviour
             {
                 maxTotalForceRightFootZ = 0f;
                 minTotalForceRightFootZ = 0f;
+                maxTotalForceRightFootZNorm = 0f;
+                minTotalForceRightFootZNorm = 0f;
             }
 
             //--------------
