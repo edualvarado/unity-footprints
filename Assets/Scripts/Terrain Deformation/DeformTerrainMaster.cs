@@ -41,6 +41,7 @@ public class DeformTerrainMaster : MonoBehaviour
     private Vector3 oldIKRightPosition;
 
     [Header("Bipedal - Physics - Debug")]
+    [Space(20)]
     public bool printFeetForces = false;
     public bool drawWeightForces = false;
     public bool drawMomentumForces = false;
@@ -48,23 +49,23 @@ public class DeformTerrainMaster : MonoBehaviour
     public bool drawFeetForces = false;
     public bool drawVelocities = false;
 
-    [Header("Bipedal - Physics - Weight Forces")]
+    [Header("Bipedal - Physics - Weight Forces Info")]
     public Vector3 weightForce;
     public Vector3 weightForceLeft;
     public Vector3 weightForceRight;
 
-    [Header("Bipedal - Physics - Feet Velocities")]
+    [Header("Bipedal - Physics - Feet Velocities Info")]
     public Vector3 feetSpeedLeft = Vector3.zero;
     public Vector3 feetSpeedRight = Vector3.zero;
 
-    [Header("Bipedal - Physics - Impulse and Momentum Forces")]
+    [Header("Bipedal - Physics - Impulse and Momentum Forces Info")]
     public Vector3 feetImpulseLeft = Vector3.zero;
     public Vector3 feetImpulseRight = Vector3.zero;
     public Vector3 momentumForce = Vector3.zero;
     public Vector3 momentumForceLeft = Vector3.zero;
     public Vector3 momentumForceRight = Vector3.zero;
 
-    [Header("Bipedal - Physics - GRF and Feet Forces")]
+    [Header("Bipedal - Physics - GRF and Feet Forces Info")]
     public Vector3 totalGRForce;
     public Vector3 totalGRForceLeft;
     public Vector3 totalGRForceRight;
@@ -72,7 +73,7 @@ public class DeformTerrainMaster : MonoBehaviour
     public Vector3 totalForceLeftFoot;
     public Vector3 totalForceRightFoot;
 
-    [Header("Max and Min Feet Forces")]
+    [Header("Max and Min Feet Forces Info")]
     public float minTotalForceLeftFootZ = 0f;
     public float maxTotalForceLeftFootZ = 0f;
     public float minTotalForceRightFootZ = 0f;
@@ -86,21 +87,32 @@ public class DeformTerrainMaster : MonoBehaviour
     private float minTotalForceRightFootZOld = 0f;
     private float maxTotalForceRightFootZOld = 0f;
 
-    [Header("Terrain Deformation - Contact Time")]
+    [Header("Terrain Deformation - Contact Time Settings (CONFIG)")]
+    [Space(20)]
     public float timePassed = 0f;
     [Tooltip("Time that the terrain requires to absorve the force from the hitting foot. More time results in a smaller require force. On the other hand, for less time, the terrain requires a larger force to stop the foot.")]
     public float contactTime = 0.1f;
     [Tooltip("Small delay, sometimes needed, to give the system enough time to perform the deformation.")]
     public float offset = 0.5f;
 
-    [Header("Terrain Prefabs")]
+    [Header("Terrain Prefabs - Settings (CONFIG)")]
+    [Space(20)]
     public bool useTerrainPrefabs = false;
     public double youngModulusSnow = 200000;
     public float timeSnow = 0.2f;
+    public float poissonRatioSnow = 0.1f;
+    public bool bumpSnow = false;
+    public int filterIterationsSnow = 0;
     public double youngModulusDrySand = 600000;
     public float timeDrySand = 0.3f;
+    public float poissonRatioSand = 0.2f;
+    public bool bumpSand = false;
+    public int filterIterationsSand = 5;
     public double youngModulusMud = 350000;
     public float timeMud = 0.8f;
+    public float poissonRatioMud = 0.4f;
+    public bool bumpMud = false;
+    public int filterIterationsMud = 2;
 
     // Types of brushes
     private BrushPhysicalFootprint brushPhysicalFootprint;
@@ -609,22 +621,36 @@ public class DeformTerrainMaster : MonoBehaviour
     {
         brushPhysicalFootprint.YoungM = youngModulusSnow;
         contactTime = timeSnow;
+        brushPhysicalFootprint.FilterIte = filterIterationsSnow;
+        brushPhysicalFootprint.PoissonRatio = poissonRatioSnow;
+        brushPhysicalFootprint.ActivateBump = bumpSnow;
+
     }
 
     public void DefineDrySand()
     {
         brushPhysicalFootprint.YoungM = youngModulusDrySand;
         contactTime = timeDrySand;
+        brushPhysicalFootprint.FilterIte = filterIterationsSand;
+        brushPhysicalFootprint.PoissonRatio = poissonRatioSand;
+        brushPhysicalFootprint.ActivateBump = bumpSand;
+
     }
 
     public void DefineMud()
     {
         brushPhysicalFootprint.YoungM = youngModulusMud;
         contactTime = timeMud;
+        brushPhysicalFootprint.FilterIte = filterIterationsMud;
+        brushPhysicalFootprint.PoissonRatio = poissonRatioMud;
+        brushPhysicalFootprint.ActivateBump = bumpMud;
     }
     public void DefineDefault()
     {
         brushPhysicalFootprint.YoungM = 750000;
+        brushPhysicalFootprint.FilterIte = 0;
+        brushPhysicalFootprint.PoissonRatio = 0f;
+        brushPhysicalFootprint.ActivateBump = false;
     }
 
     //      Getters       //

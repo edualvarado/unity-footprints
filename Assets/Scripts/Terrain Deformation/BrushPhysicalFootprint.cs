@@ -44,6 +44,9 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     // Materials
     private bool useTerrainPrefabs;
     private double youngM;
+    private int filterIte;
+    private float poissonRatio;
+    private bool activateBump;
 
     #endregion
 
@@ -116,10 +119,28 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #region Material Properties
 
+    public bool ActivateBump
+    {
+        get { return activateBump; }
+        set { activateBump = value; }
+    }
+
+    public float PoissonRatio
+    {
+        get { return poissonRatio; }
+        set { poissonRatio = value; }
+    }
+
     public double YoungM
     {
         get { return youngM; }
         set { youngM = value; }
+    }
+
+    public int FilterIte
+    {
+        get { return filterIte; }
+        set { filterIte = value; }
     }
 
     #endregion

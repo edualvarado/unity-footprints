@@ -471,7 +471,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 370383752}
-  m_LocalRotation: {x: 0.12398983, y: 0.48852602, z: -0.070365444, w: 0.8608238}
+  m_LocalRotation: {x: 0.12398983, y: 0.48852605, z: -0.07036545, w: 0.8608238}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -575,7 +575,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 537267395}
-  m_LocalRotation: {x: 0.15517737, y: 0.4856476, z: -0.088064685, w: 0.85575175}
+  m_LocalRotation: {x: 0.15517737, y: 0.48564756, z: -0.08806468, w: 0.85575175}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -831,6 +831,87 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &902491360
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 902491361}
+  - component: {fileID: 902491364}
+  - component: {fileID: 902491363}
+  m_Layer: 8
+  m_Name: Water
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &902491361
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902491360}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5, y: 0.94, z: 5}
+  m_LocalScale: {x: 0.85, y: 1, z: 0.85}
+  m_Children: []
+  m_Father: {fileID: 1294016572}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &902491363
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902491360}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: f2c373f607a52104cb0b8bc361ec0606, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &902491364
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902491360}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1156,7 +1237,8 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 20}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 902491361}
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1470,16 +1552,29 @@ MonoBehaviour:
   maxTotalForceLeftFootZ: 0
   minTotalForceRightFootZ: 0
   maxTotalForceRightFootZ: 0
+  minTotalForceLeftFootZNorm: 0
+  maxTotalForceLeftFootZNorm: 0
+  minTotalForceRightFootZNorm: 0
+  maxTotalForceRightFootZNorm: 0
   timePassed: 0
   contactTime: 0.1
   offset: 0.5
   useTerrainPrefabs: 0
-  youngModulusSnow: 200000
-  timeSnow: 8.78
-  youngModulusDrySand: 900000
-  timeDrySand: 0.4
-  youngModulusMud: 450000
-  timeMud: 0.8
+  youngModulusSnow: 250000
+  timeSnow: 0.2
+  poissonRatioSnow: 0
+  bumpSnow: 0
+  filterIterationsSnow: 1
+  youngModulusDrySand: 700000
+  timeDrySand: 0.3
+  poissonRatioSand: 0.49
+  bumpSand: 1
+  filterIterationsSand: 1
+  youngModulusMud: 250000
+  timeMud: 0.5
+  poissonRatioMud: 0.05
+  bumpMud: 1
+  filterIterationsMud: 2
 --- !u!114 &1758997916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1497,36 +1592,52 @@ MonoBehaviour:
   showGridDebugLeft: 0
   showGridDebugRight: 0
   showGridBumpDebug: 0
+  showGridBumpFrontBack: 0
   printTerrainInformation: 0
   printDeformationInformation: 0
   gridSize: 10
   rayDistance: 0.1
   offsetRay: 0.04
+  youngModulus: 1000000
+  originalLength: 1
+  heightCellDisplacementYoungLeft: 0
+  heightCellDisplacementYoungRight: 0
+  displacementLeft: 0
+  displacementRight: 0
   counterHitsLeft: 0
   counterHitsRight: 0
   areaCell: 0
   areaTotal: 0
   areaTotalLeft: 0
   areaTotalRight: 0
-  pressure: 0
-  pressureLeft: 0
-  pressureRight: 0
-  youngModulus: 1000000
-  originaLength: 1
-  heightCellDisplacementYoungLeft: 0
-  heightCellDisplacementYoungRight: 0
-  displacementLeft: 0
-  displacementRight: 0
+  volumeOriginalLeft: 0
+  volumeOriginalRight: 0
+  volumeTotalLeft: 0
+  volumeTotalRight: 0
+  volumeVariationLeft: 0
+  volumeVariationRight: 0
+  pressureStress: 0
+  pressureStressLeft: 0
+  pressureStressRight: 0
+  useManualBumpDeformation: 0
+  bumpHeightDeformation: 0.029999999329447746
   offsetBumpGrid: 2
   neighbourSearchArea: 1
+  poissonRatio: 0.4
+  newBumpHeightDeformationLeft: 0
+  newBumpHeightDeformationRight: 0
+  bumpDisplacementLeftBack: 0
+  bumpDisplacementRightBack: 0
   neighbourCellsLeft: 0
   neighbourCellsRight: 0
   neighbourAreaTotalLeft: 0
   neighbourAreaTotalRight: 0
-  neighboursPositionsRight: []
-  neighboursPositionsLeft: []
-  neighboursWeightsRight: []
-  allSumCotRight: []
+  strainLong: 0
+  strainTrans: 0
+  neighboursPositionsRightFront: []
+  neighboursPositionsLeftFront: []
+  neighboursPositionsRightBack: []
+  neighboursPositionsLeftBack: []
   applyFilterLeft: 0
   applyFilterRight: 0
   filterIterationsLeftFoot: 2
@@ -1581,6 +1692,10 @@ PrefabInstance:
     - target: {fileID: 5129985756030307204, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
       propertyPath: m_Name
       value: Human
+      objectReference: {fileID: 0}
+    - target: {fileID: 5129985756030307204, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5129985756030307205, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
       propertyPath: m_LocalPosition.x

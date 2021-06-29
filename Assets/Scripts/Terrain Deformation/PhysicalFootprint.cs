@@ -30,42 +30,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     [Range(0f, 1f)] public float rayDistance = 0.1f;
     [Range(0f, 1f)] public float offsetRay = 0.04f;
 
-    [Header("Deformation - Number of hits")]
-    public int counterHitsLeft;
-    public int counterHitsRight;
-
-    [Header("Deformation - Contact Area Feet-Ground")]
-    public float areaCell;
-    public float areaTotal = 0f;
-    public float areaTotalLeft = 0f;
-    public float areaTotalRight = 0f;
-    private float oldAreaTotalLeft = 0f;
-    private float oldAreaTotalRight = 0f;
-    private float lenghtCellX;
-    private float lenghtCellZ;
-
-    [Header("Deformation - Volume Rod Approximation")]
-    public double volumeTotalLeft = 0f; // TEST
-    public double volumeTotalRight = 0f; // TEST
-    public double volumeOriginalLeft = 0f; // TEST
-    public double volumeOriginalRight = 0f; // TEST
-    public double volumeTotalBumpLeft = 0f; // TEST
-    public double volumeTotalBumpRight = 0f; // TEST
-    public double volumeOriginalBumpLeft = 0f; // TEST
-    public double volumeOriginalBumpRight = 0f; // TEST
-    public double volumeVariationLeft; // TEST
-    public double volumeVariationRight; // TEST
-
-    [Header("Deformation - Pressure (Stress) by feet")]
-    public float pressureStress;
-    public float pressureStressLeft;
-    public float pressureStressRight;
-
-    [Header("Terrain Deformation - Settings")]
-    //public bool usePredefinedGround = false;
+    [Header("Terrain Deformation - Settings (CONFIG)")]
+    [Space(20)]
     [Range(100000, 1000000)] public double youngModulus = 1000000;
-    public float originaLength = 1f;
-    [Range(0, 0.05f)] public double bumpHeightDeformation = 0.03f; // TEST - It should be calculated directly from the young Modulus system
+    public float originalLength = 1f;
 
     [Header("Terrain Deformation - Info")]
     public double heightCellDisplacementYoungLeft = 0f;
@@ -75,36 +43,69 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     private double oldHeightCellDisplacementYoungLeft = 0f;
     private double oldHeightCellDisplacementYoungRight = 0f;
 
-    [Header("Bump Deformation - Settings")]
+    [Header("Terrain Deformation - Number of hits")]
+    public int counterHitsLeft;
+    public int counterHitsRight;
+
+    [Header("Terrain Deformation - Contact Area Feet-Ground")]
+    public float areaCell;
+    public float areaTotal = 0f;
+    public float areaTotalLeft = 0f;
+    public float areaTotalRight = 0f;
+    private float oldAreaTotalLeft = 0f;
+    private float oldAreaTotalRight = 0f;
+    private float lenghtCellX;
+    private float lenghtCellZ;
+
+    [Header("Terrain Deformation - Volume Rod Approximation")]
+    public double volumeOriginalLeft = 0f; // Original volume under left foot
+    public double volumeOriginalRight = 0f; // Original volume under right foot
+    public double volumeTotalLeft = 0f; // TEST
+    public double volumeTotalRight = 0f; // TEST
+    public double volumeVariationLeft; // TEST
+    public double volumeVariationRight; // TEST
+
+    [Header("Terrain Deformation - Pressure (Stress) by feet")]
+    public float pressureStress;
+    public float pressureStressLeft;
+    public float pressureStressRight;
+
+    [Header("Bump Deformation - Settings (CONFIG)")]
+    [Space(20)]
+    public bool useManualBumpDeformation = false;
+    [Range(0, 0.05f)] public double bumpHeightDeformation = 0.03f; // In case one wants to do it manually
     public int offsetBumpGrid = 2;
     public int neighbourSearchArea = 1;
-
-    [Header("Bump Deformation - Settings (EXPERIMENTAL)")]
     [Range(0, 0.5f)] public float poissonRatio = 0.4f; // TEST
-    public double newBumpHeightDeformationLeft = 0f; // TEST
-    public double newBumpHeightDeformationRight = 0f; // TEST
-    public double strainLong; // TEST
-    public double strainTrans; // TEST
 
     [Header("Bump Deformation - Info")]
-    public int neighbourCellsLeft;
-    public int neighbourCellsRight;
-    public float neighbourAreaTotalLeft;
-    public float neighbourAreaTotalRight;
-    private float bumpDisplacementLeftBack; // TEST
-    private float bumpDisplacementRightBack; // TEST
+    public double newBumpHeightDeformationLeft = 0f; // TEST
+    public double newBumpHeightDeformationRight = 0f; // TEST
+    public float bumpDisplacementLeftBack; // TEST
+    public float bumpDisplacementRightBack; // TEST
     private float bumpDisplacementLeftFront; // TEST
     private float bumpDisplacementRightFront; // TEST
     private float oldNeighbourAreaTotalLeft;
     private float oldNeighbourAreaTotalRight;
 
-    [Header("Terrain Deformation - Bump Vector3 Coordinates")]
+    [Header("Bump Deformation - Neighbour Area Feet-Ground")]
+    public int neighbourCellsLeft;
+    public int neighbourCellsRight;
+    public float neighbourAreaTotalLeft;
+    public float neighbourAreaTotalRight;
+
+    [Header("Bump Deformation - Strains Info")]
+    public double strainLong; // TEST
+    public double strainTrans; // TEST
+
+    [Header("Bump Deformation - Bump Vector3 Coordinates")]
     public List<Vector3> neighboursPositionsRightFront = new List<Vector3>(); // TEST
     public List<Vector3> neighboursPositionsLeftFront = new List<Vector3>(); // TEST
     public List<Vector3> neighboursPositionsRightBack = new List<Vector3>(); // TEST
     public List<Vector3> neighboursPositionsLeftBack = new List<Vector3>(); // TEST
 
-    [Header("Filter")]
+    [Header("Filtering - Settings (CONFIG)")]
+    [Space(20)]
     public bool applyFilterLeft = false;
     public bool applyFilterRight = false;
     public int filterIterationsLeftFoot = 2;
@@ -123,7 +124,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     //public bool applyPreFilterLeft = false;
     //public bool applyPreFilterRight = false;
 
-    // Others - Not used
+    // Others
     private float[,] heightMapLeft;
     private float[,] heightMapRight;
     private float[,] heightMapLeftFiltered;
@@ -150,6 +151,21 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         if (UseTerrainPrefabs)
         {
             youngModulus = YoungM;
+            poissonRatio = PoissonRatio;
+            applyBumps = ActivateBump;
+
+            if (FilterIte != 0)
+            {
+                applyFilterLeft = true;
+                applyFilterRight = true;
+                filterIterationsLeftFoot = FilterIte;
+                filterIterationsRightFoot = FilterIte;
+            }
+            else if (FilterIte == 0)
+            {
+                applyFilterLeft = false;
+                applyFilterRight = false;
+            }
         }
 
         // Reset counter hits
@@ -262,17 +278,21 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         oldAreaTotalLeft = ((counterHitsLeft) * areaCell);
         if (oldAreaTotalLeft >= areaTotalLeft)
         {
+            // Area of contact
             areaTotalLeft = ((counterHitsLeft) * areaCell);
-            volumeTotalLeft = areaTotalLeft * (originaLength - heightCellDisplacementYoungLeft); // TEST
-            volumeOriginalLeft = areaTotalLeft * (originaLength); // TEST
+
+            // Volume under the foot for that recent calculated area
+            volumeOriginalLeft = areaTotalLeft * (originalLength);
         }
 
         oldAreaTotalRight = ((counterHitsRight) * areaCell);
         if (oldAreaTotalRight >= areaTotalRight)
         {
+            // Area of contact
             areaTotalRight = ((counterHitsRight) * areaCell);
-            volumeTotalRight = areaTotalRight * (originaLength - heightCellDisplacementYoungRight); // TEST
-            volumeOriginalRight = areaTotalRight * (originaLength); // TEST
+
+            // Volume under the foot for that recent calculated area
+            volumeOriginalRight = areaTotalRight * (originalLength);
         }
 
         // Total Area and Volume for both feet
@@ -434,23 +454,15 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         oldNeighbourAreaTotalLeft = ((neighbourCellsLeft) * areaCell);
         if (oldNeighbourAreaTotalLeft >= neighbourAreaTotalLeft)
         {
+            // Area of bump - Not used yet - TODO
             neighbourAreaTotalLeft = ((neighbourCellsLeft) * areaCell);
-
-            // Here calculate the necessary displacement! - TODO
-            //volumeTotalBumpLeft = neighbourAreaTotalLeft * (originaLength - heightCellDisplacementYoungLeft); // TEST
-            volumeOriginalBumpLeft = neighbourAreaTotalLeft * (originaLength); // TEST - TODO
-            ///////
         }
 
         oldNeighbourAreaTotalRight = ((neighbourCellsRight) * areaCell);
         if (oldNeighbourAreaTotalRight >= neighbourAreaTotalRight)
         {
+            // Area of bump - Not used yet - TODO
             neighbourAreaTotalRight = ((neighbourCellsRight) * areaCell);
-
-            // Here calculate the necessary displacement! - TODO
-            //volumeTotalBumpLeft = neighbourAreaTotalLeft * (originaLength - heightCellDisplacementYoungLeft); // TEST
-            volumeOriginalBumpRight = neighbourAreaTotalRight * (originaLength); // TEST - TODO
-            ///////
         }
 
         //       Physics Calculation       //
@@ -485,46 +497,60 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         // The decrement will depend also on the ContactTime used to calculate the corresponding force
         // As for the area, we keep the maximum value
 
-        oldHeightCellDisplacementYoungLeft = pressureStressLeft * (originaLength / (youngModulus));
+        oldHeightCellDisplacementYoungLeft = pressureStressLeft * (originalLength / (youngModulus));
         if (oldHeightCellDisplacementYoungLeft >= heightCellDisplacementYoungLeft)
         {
             // We use abs. value but for compression, the change in length is negative
-            heightCellDisplacementYoungLeft = pressureStressLeft * (originaLength / youngModulus);
+            heightCellDisplacementYoungLeft = pressureStressLeft * (originalLength / youngModulus);
 
-            // TEST - Calculate bump
-            newBumpHeightDeformationLeft = ((areaTotalLeft * (originaLength - heightCellDisplacementYoungLeft) - volumeVariationLeft) / areaTotalLeft) - originaLength;
+            // Resulting volume under the left foot after displacement
+            volumeTotalLeft = areaTotalLeft * (originalLength - heightCellDisplacementYoungLeft);
+
+            // Calculate positive deformation for the contour based on the downward deformation and Poisson
+            newBumpHeightDeformationLeft = ((volumeTotalLeft - volumeVariationLeft) / areaTotalLeft) - originalLength;
+
         }
 
-        oldHeightCellDisplacementYoungRight = pressureStressRight * (originaLength / (youngModulus));
+        oldHeightCellDisplacementYoungRight = pressureStressRight * (originalLength / (youngModulus));
         if (oldHeightCellDisplacementYoungRight >= heightCellDisplacementYoungRight)
         {
             // We use abs. value but for compression, the change in length is negative
-            heightCellDisplacementYoungRight = pressureStressRight * (originaLength / youngModulus);
+            heightCellDisplacementYoungRight = pressureStressRight * (originalLength / youngModulus);
 
-            // TEST - Calculate bump
-            newBumpHeightDeformationRight = ((areaTotalRight * (originaLength - heightCellDisplacementYoungRight) - volumeVariationRight) / areaTotalRight) - originaLength;
+            // Resulting volume under the right foot after displacement
+            volumeTotalRight = areaTotalRight * (originalLength - heightCellDisplacementYoungRight);
+
+            // Calculate positive deformation for the contour based on the downward deformation and Poisson
+            newBumpHeightDeformationRight = ((volumeTotalRight - volumeVariationRight) / areaTotalRight) - originalLength;
+
         }
 
         // Given the entire deformation in Y, we calculate the corresponding frame-based deformation based on the frame-time.
         displacementLeft = (Time.deltaTime * (float)heightCellDisplacementYoungLeft) / ContactTime;
         displacementRight = (Time.deltaTime * (float)heightCellDisplacementYoungRight) / ContactTime;
 
+        if(useManualBumpDeformation)
+        {
+            newBumpHeightDeformationLeft = -bumpHeightDeformation;
+            newBumpHeightDeformationRight = -bumpHeightDeformation;
+        }
+
         // Given the  deformation in Y for the bump, we calculate the corresponding frame-based deformation based on the frame-time.
-        bumpDisplacementLeftBack = (Time.deltaTime * (float)bumpHeightDeformation) / ContactTime;
-        bumpDisplacementRightBack = (Time.deltaTime * (float)bumpHeightDeformation) / ContactTime;
-        bumpDisplacementLeftFront = (Time.deltaTime * (float)bumpHeightDeformation) / ContactTime;
-        bumpDisplacementRightFront = (Time.deltaTime * (float)bumpHeightDeformation) / ContactTime;
+        bumpDisplacementLeftBack = (Time.deltaTime * (float)newBumpHeightDeformationLeft) / ContactTime;
+        bumpDisplacementRightBack = (Time.deltaTime * (float)newBumpHeightDeformationRight) / ContactTime;
+        bumpDisplacementLeftFront = (Time.deltaTime * (float)newBumpHeightDeformationLeft) / ContactTime;
+        bumpDisplacementRightFront = (Time.deltaTime * (float)newBumpHeightDeformationRight) / ContactTime;
 
         //     Physics+ Calculation     //
         // =============================== //
 
-        // TEST - Strains (compression)
-        strainLong = -(heightCellDisplacementYoungRight) / originaLength;
+        // Strains (compression) - Info
+        strainLong = -(heightCellDisplacementYoungRight) / originalLength;
         strainTrans = poissonRatio * strainLong;
 
-        // TEST - If Poisson is 0.5 : ideal imcompressible material (no change in volume)
-        volumeVariationLeft = (1 - 2 * poissonRatio) * (heightCellDisplacementYoungLeft / originaLength) * volumeOriginalLeft;
-        volumeVariationRight = (1 - 2 * poissonRatio) * (heightCellDisplacementYoungRight / originaLength) * volumeOriginalRight;
+        // TEST - If Poisson is 0.5 : ideal imcompressible material (no change in volume) - Compression : -/delta_L
+        volumeVariationLeft = (1 - 2 * poissonRatio) * (-heightCellDisplacementYoungLeft / originalLength) * volumeOriginalLeft;
+        volumeVariationRight = (1 - 2 * poissonRatio) * (-heightCellDisplacementYoungRight / originalLength) * volumeOriginalRight;
 
         //        Apply Deformation        //
         // =============================== //
@@ -635,9 +661,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 else if (!LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 4) && applyBumps)
                 {
                     // If ray does not hit and is classified as BACK neightbour, we create a bump.
-                    if (terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + bumpHeightDeformation)
+                    if (terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) - newBumpHeightDeformationLeft)
                     {
-                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (bumpDisplacementLeftBack * MaxTotalForceLeftFootZNorm);
+                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) - (bumpDisplacementLeftBack * MaxTotalForceLeftFootZNorm);
                     }
                     else
                     {
@@ -724,9 +750,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 else if (!RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 4) && applyBumps)
                 {
                     // If ray does not hit and is classified as BACK neightbour, we create a bump.
-                    if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + bumpHeightDeformation)
+                    if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) - newBumpHeightDeformationRight) 
                     {
-                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) + (bumpDisplacementRightBack * MaxTotalForceRightFootZNorm);
+                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) - (bumpDisplacementRightBack * MaxTotalForceRightFootZNorm);
                     }
                     else
                     {
