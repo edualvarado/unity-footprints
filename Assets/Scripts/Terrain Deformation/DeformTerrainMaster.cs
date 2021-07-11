@@ -340,15 +340,24 @@ public class DeformTerrainMaster : MonoBehaviour
             //--------------
 
             // Impulse per foot - Linear Momentum change (final velocity for the feet is 0)
-            feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
-            feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
+            //feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
+            //feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
 
-            // TEST - Take only inpulses when hitting the ground
-            //if (feetImpulseLeft.y <= 0f)
-            //    feetImpulseLeft = new Vector3(feetImpulseLeft.x, 0f, feetImpulseLeft.z);
+            // PROVISIONAL TEST - CAREFUL! Take only velocities going downward //
+            // =============================================================== //
 
-            //if (feetImpulseRight.y <= 0f)
-            //    feetImpulseRight = new Vector3(feetImpulseRight.x, 0f, feetImpulseRight.z);
+            if (feetSpeedLeft.y <= 0f)
+                feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
+            else
+                feetImpulseLeft = Vector3.zero;
+
+
+            if (feetSpeedRight.y <= 0f)
+                feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
+            else
+                feetImpulseRight = Vector3.zero;
+
+            // =========================== //
 
             //--------------
 
@@ -373,25 +382,25 @@ public class DeformTerrainMaster : MonoBehaviour
 
 
             // Momentum Forces are created when we hit the ground (that is, when such forces are positive in y, and the feet are grounded)
-            if (drawMomentumForces && isMoving && momentumForceLeft.y > 0f && isLeftFootGrounded)
-            {
-                DrawForce.ForDebug3D(centerGridLeftFootHeight, momentumForceLeft, Color.red, 0.0025f);
-            }
-
-            if (drawMomentumForces && isMoving && momentumForceRight.y > 0f && isRightFootGrounded)
-            {
-                DrawForce.ForDebug3D(centerGridRightFootHeight, momentumForceRight, Color.red, 0.0025f);
-            }
-
-            //if (drawMomentumForces && isMoving && isLeftFootGrounded)
+            //if (drawMomentumForces && isMoving && momentumForceLeft.y > 0f && isLeftFootGrounded)
             //{
             //    DrawForce.ForDebug3D(centerGridLeftFootHeight, momentumForceLeft, Color.red, 0.0025f);
             //}
 
-            //if (drawMomentumForces && isMoving && isRightFootGrounded)
+            //if (drawMomentumForces && isMoving && momentumForceRight.y > 0f && isRightFootGrounded)
             //{
             //    DrawForce.ForDebug3D(centerGridRightFootHeight, momentumForceRight, Color.red, 0.0025f);
             //}
+
+            if (drawMomentumForces && isMoving && isLeftFootGrounded)
+            {
+                DrawForce.ForDebug3D(centerGridLeftFootHeight, momentumForceLeft, Color.red, 0.0025f);
+            }
+
+            if (drawMomentumForces && isMoving && isRightFootGrounded)
+            {
+                DrawForce.ForDebug3D(centerGridRightFootHeight, momentumForceRight, Color.red, 0.0025f);
+            }
 
             //--------------
 
@@ -407,22 +416,25 @@ public class DeformTerrainMaster : MonoBehaviour
             totalGRForceYFloat = totalGRForce.y;
             // ============================================= //
 
+            // Other color
+            Color darkGreen = new Color(0.074f, 0.635f, 0.062f, 1f);
+
             // GRF is already zero if the foot is not grounded - however, we draw only when foot is grounded
             if (drawGRForces && !isMoving)
             {
-                DrawForce.ForDebug3D(centerGridLeftFootHeight, totalGRForceLeft, Color.green, 0.0025f);
-                DrawForce.ForDebug3D(centerGridRightFootHeight, totalGRForceRight, Color.green, 0.0025f);
+                DrawForce.ForDebug3D(centerGridLeftFootHeight, totalGRForceLeft, darkGreen, 0.0025f);
+                DrawForce.ForDebug3D(centerGridRightFootHeight, totalGRForceRight, darkGreen, 0.0025f);
             }
             else
             {
                 if (drawGRForces && isLeftFootGrounded)
                 {
-                    DrawForce.ForDebug3D(centerGridLeftFootHeight, totalGRForceLeft, Color.green, 0.0025f);
+                    DrawForce.ForDebug3D(centerGridLeftFootHeight, totalGRForceLeft, darkGreen, 0.0025f);
                 }
 
                 if (drawGRForces && isRightFootGrounded)
                 {
-                    DrawForce.ForDebug3D(centerGridRightFootHeight, totalGRForceRight, Color.green, 0.0025f);
+                    DrawForce.ForDebug3D(centerGridRightFootHeight, totalGRForceRight, darkGreen, 0.0025f);
                 }
             }
 

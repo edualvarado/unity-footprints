@@ -471,7 +471,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 370383752}
-  m_LocalRotation: {x: 0.12398983, y: 0.48852602, z: -0.070365444, w: 0.8608238}
+  m_LocalRotation: {x: 0.12398983, y: 0.48852605, z: -0.07036545, w: 0.8608238}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -575,7 +575,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 537267395}
-  m_LocalRotation: {x: 0.15517737, y: 0.48564756, z: -0.08806468, w: 0.85575175}
+  m_LocalRotation: {x: 0.15517738, y: 0.48564756, z: -0.08806467, w: 0.8557518}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1527,10 +1527,10 @@ MonoBehaviour:
   centerGridLeftFootHeight: {x: 0, y: 0, z: 0}
   centerGridRightFootHeight: {x: 0, y: 0, z: 0}
   printFeetForces: 0
-  drawWeightForces: 0
-  drawMomentumForces: 0
-  drawGRForces: 0
-  drawFeetForces: 0
+  drawWeightForces: 1
+  drawMomentumForces: 1
+  drawGRForces: 1
+  drawFeetForces: 1
   drawVelocities: 0
   weightForce: {x: 0, y: 0, z: 0}
   weightForceLeft: {x: 0, y: 0, z: 0}
@@ -1614,8 +1614,12 @@ MonoBehaviour:
   volumeOriginalRight: 0
   volumeTotalLeft: 0
   volumeTotalRight: 0
-  volumeVariationLeft: 0
-  volumeVariationRight: 0
+  volumeVariationPoissonLeft: 0
+  volumeVariationPoissonRight: 0
+  volumeDifferenceLeft: 0
+  volumeDifferenceRight: 0
+  volumeCellLeft: 0
+  volumeCellRight: 0
   pressureStress: 0
   pressureStressLeft: 0
   pressureStressRight: 0

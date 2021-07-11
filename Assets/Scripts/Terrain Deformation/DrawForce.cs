@@ -72,14 +72,18 @@ public static class DrawForce
     }
     public static void ForDebug3D(Vector3 pos, Vector3 direction, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
     {
+        float reduce = 0.5f;
+
+        pos = pos + new Vector3(0.5f, 0, 0);
+
         if (direction != Vector3.zero)
         {
-            Debug.DrawRay(pos, direction * lengthMultiplier, color);
+            Debug.DrawRay(pos, reduce * direction * lengthMultiplier, color);
 
-            Vector3 right = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 + arrowHeadAngle, 0) * new Vector3(0, 0, 1);
-            Vector3 left = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 - arrowHeadAngle, 0) * new Vector3(0, 0, 1);
-            Debug.DrawRay(pos + (direction * lengthMultiplier), right * arrowHeadLength, color);
-            Debug.DrawRay(pos + (direction * lengthMultiplier), left * arrowHeadLength, color);
+            Vector3 right = Quaternion.LookRotation( reduce *direction) * Quaternion.Euler(0, 180 + arrowHeadAngle, 0) * Quaternion.Euler(30, 0, 0) * new Vector3(0, 0, 1);
+            Vector3 left = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 - arrowHeadAngle, 0) * Quaternion.Euler(-30, 0, 0) * new Vector3(0, 0, 1);
+            Debug.DrawRay(pos + (reduce * direction * lengthMultiplier), right * arrowHeadLength, color);
+            Debug.DrawRay(pos + (reduce * direction * lengthMultiplier), left * arrowHeadLength, color);
         }
     }
 }
