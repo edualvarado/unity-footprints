@@ -509,12 +509,12 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             // We use abs. value but for compression, the change in length is negative
             heightCellDisplacementYoungLeft = pressureStressLeft * (originalLength / youngModulus);
 
-            // Resulting volume under the left foot after displacement
-            volumeTotalLeft = areaTotalLeft * (originalLength - heightCellDisplacementYoungLeft);
+            // Resulting volume under the left foot after displacement - CHANGED
+            volumeTotalLeft = areaTotalLeft * (originalLength + (-heightCellDisplacementYoungLeft));
 
             // TEST - Calculate the difference in volume, takes into account the compressibility and estimate volume up per neighbour cell
-            volumeDifferenceLeft =  volumeTotalLeft - volumeOriginalLeft;
-            volumeNetDifferenceLeft = volumeDifferenceLeft - volumeVariationPoissonLeft;
+            volumeDifferenceLeft =  volumeTotalLeft - volumeOriginalLeft; // NEGATIVE CHANGE
+            volumeNetDifferenceLeft = -volumeDifferenceLeft + volumeVariationPoissonLeft; // Calculate directly the volume in the bump upwards (positive)
             volumeCellLeft = volumeNetDifferenceLeft / neighbourCellsLeft;
 
             // 1. Calculate positive deformation for the contour based on the downward deformation and Poisson
@@ -533,11 +533,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             heightCellDisplacementYoungRight = pressureStressRight * (originalLength / youngModulus);
 
             // Resulting volume under the right foot after displacement
-            volumeTotalRight = areaTotalRight * (originalLength - heightCellDisplacementYoungRight);
+            volumeTotalRight = areaTotalRight * (originalLength + (-heightCellDisplacementYoungRight));
 
             // TEST - Calculate the difference in volume, takes into account the compressibility and estimate volume up per neighbour cell
-            volumeDifferenceRight = volumeTotalRight - volumeOriginalRight;
-            volumeNetDifferenceRight = volumeDifferenceRight - volumeVariationPoissonRight;
+            volumeDifferenceRight = volumeTotalRight - volumeOriginalRight; // NEGATIVE CHANGE
+            volumeNetDifferenceRight = -volumeDifferenceRight + volumeVariationPoissonRight; // Calculate directly the volume in the bump upwards (positive)
             volumeCellRight = volumeNetDifferenceRight / neighbourCellsRight;
 
             // 1. Calculate positive deformation for the contour based on the downward deformation and Poisson
@@ -572,7 +572,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         strainTrans = poissonRatio * strainLong;
 
         // TEST - If Poisson is 0.5 : ideal imcompressible material (no change in volume) - Compression : -/delta_L
-        volumeVariationPoissonLeft = (1 - 2 * poissonRatio) * (-heightCellDisplacementYoungLeft / originalLength) * volumeOriginalLeft;
+        volumeVariationPoissonLeft = (1 - 2 * poissonRatio) * (-heightCellDisplacementYoungLeft / originalLength) * volumeOriginalLeft; // NEGATIVE CHANGE
         volumeVariationPoissonRight = (1 - 2 * poissonRatio) * (-heightCellDisplacementYoungRight / originalLength) * volumeOriginalRight;
 
         //        Apply Deformation        //
@@ -684,10 +684,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 else if (!LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 4) && applyBumps)
                 {
                     // If ray does not hit and is classified as BACK neightbour, we create a bump.
-                    if (terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) - newBumpHeightDeformationLeft)
+                    if (terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + newBumpHeightDeformationLeft)
                     {
                         //heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) - (bumpDisplacementLeftBack * MaxTotalForceLeftFootZNorm);
-                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) - (bumpDisplacementLeftBack);
+                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (bumpDisplacementLeftBack);
                     }
                     else
                     {
@@ -696,9 +696,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 }
                 else if (!LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 3) && applyBumps)
                 {
-                    if (terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) - newBumpHeightDeformationLeft)
+                    if (terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + newBumpHeightDeformationLeft)
                     {
-                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) - (bumpDisplacementLeftBack);
+                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (bumpDisplacementLeftBack);
                     }
                     else
                     {
@@ -785,10 +785,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 else if (!RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 4) && applyBumps)
                 {
                     // If ray does not hit and is classified as BACK neightbour, we create a bump.
-                    if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) - newBumpHeightDeformationRight) 
+                    if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + newBumpHeightDeformationRight) 
                     {
                         //heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) - (bumpDisplacementRightBack * MaxTotalForceRightFootZNorm);
-                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) - (bumpDisplacementRightBack);
+                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) + (bumpDisplacementRightBack);
                     }
                     else
                     {
@@ -797,9 +797,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 }
                 else if (!RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 3) && applyBumps)
                 {
-                    if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) - newBumpHeightDeformationRight)
+                    if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + newBumpHeightDeformationRight)
                     {
-                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) - (bumpDisplacementRightBack);
+                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) + (bumpDisplacementRightBack);
                     }
                     else
                     {
