@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ShowYoung : MonoBehaviour
+public class ShowPoisson : MonoBehaviour
 {
-    public Slider youngSlider;
-    private Text youngValue;
+    public Slider poissonSlider;
+    private Text poissonValue;
 
     // Start is called before the first frame update
-    private void Start()
+    void Start()
     {
-        youngValue = this.GetComponent<Text>();
+        poissonValue = this.GetComponent<Text>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        youngValue.text = (youngSlider.value).ToString() + " Pa";
+        poissonValue.text = (poissonSlider.value).ToString();
     }
 }

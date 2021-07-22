@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 abstract public class BrushPhysicalFootprint : MonoBehaviour
 {
@@ -47,6 +48,15 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     private int filterIte;
     private float poissonRatio;
     private bool activateBump;
+    private bool useUI;
+    private Slider youngSlider;
+    private Slider poissonSlider;
+    private Slider iterationsSlider;
+    private Toggle activateToggleDef;
+    private Toggle activateToggleBump;
+    private Toggle activateToggleGauss;
+    private Toggle activateToggleShowGrid;
+    private Toggle activateToggleShowBump;
 
     #endregion
 
@@ -145,7 +155,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #endregion
 
-
     #region Terrain Properties
 
     public TerrainData TerrainData
@@ -175,12 +184,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     #endregion
 
     #region Force Properties
-
-    public bool UseTerrainPrefabs
-    {
-        get { return useTerrainPrefabs; }
-        set { useTerrainPrefabs = value; }
-    }
 
     public float ContactTime
     {
@@ -246,6 +249,70 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #endregion
 
+    #region Other Properties
+
+    public bool UseTerrainPrefabs
+    {
+        get { return useTerrainPrefabs; }
+        set { useTerrainPrefabs = value; }
+    }
+
+    public bool UseUI
+    {
+        get { return useUI; }
+        set { useUI = value; }
+    }
+
+    public Slider YoungSlider
+    {
+        get { return youngSlider; }
+        set { youngSlider = value; }
+    }
+
+    public Slider PoissonSlider
+    {
+        get { return poissonSlider; }
+        set { poissonSlider = value; }
+    }
+
+    public Slider IterationsSlider
+    {
+        get { return iterationsSlider; }
+        set { iterationsSlider = value; }
+    }
+
+    public Toggle ActivateToggleDef
+    {
+        get { return activateToggleDef; }
+        set { activateToggleDef = value; }
+    }
+
+    public Toggle ActivateToggleBump
+    {
+        get { return activateToggleBump; }
+        set { activateToggleBump = value; }
+    }
+
+    public Toggle ActivateToggleGauss
+    {
+        get { return activateToggleGauss; }
+        set { activateToggleGauss = value; }
+    }
+
+    public Toggle ActivateToggleShowGrid
+    {
+        get { return activateToggleShowGrid; }
+        set { activateToggleShowGrid = value; }
+    }
+
+    public Toggle ActivateToggleShowBump
+    {
+        get { return activateToggleShowBump; }
+        set { activateToggleShowBump = value; }
+    }
+
+    #endregion
+
     void Start()
     {
         // Get the terrain
@@ -293,6 +360,17 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
         // Get if we are using prefabs option
         UseTerrainPrefabs = terrain.useTerrainPrefabs;
+
+        // Get if we are using the UI
+        UseUI = terrain.useUI;
+        YoungSlider = terrain.youngSlider;
+        PoissonSlider = terrain.poissonSlider;
+        IterationsSlider = terrain.iterationsSlider;
+        ActivateToggleDef = terrain.activateToggleDef;
+        ActivateToggleBump = terrain.activateToggleBump;
+        ActivateToggleGauss = terrain.activateToggleGauss;
+        ActivateToggleShowGrid = terrain.activateToggleShowGrid;
+        ActivateToggleShowBump = terrain.activateToggleShowBump;
     }
 
     public void Deactivate()

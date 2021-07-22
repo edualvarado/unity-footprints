@@ -13,6 +13,11 @@ public class BrushEditorPhysicalFootprint : Editor
 	public override void OnInspectorGUI()
 	{
 		BrushPhysicalFootprint myBrush = (BrushPhysicalFootprint)target;
+
+		// To start brush by default
+		if (!myBrush.IsActive() && Application.isPlaying)
+			myBrush.Toggle();
+
 		if (myBrush.IsActive())
 			DrawDefaultInspector();
 

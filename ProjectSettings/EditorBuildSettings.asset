@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Terrain Deformation.unity
+    guid: 4a1a2b51d5e5ccc40a507d1a2a9fb9ee
   m_configObjects: {}

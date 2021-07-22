@@ -114,6 +114,19 @@ public class DeformTerrainMaster : MonoBehaviour
     public bool bumpMud = false;
     public int filterIterationsMud = 2;
 
+    [Header("Use UI for Demo mode")]
+    [Space(20)]
+    public bool useUI;
+    public Slider youngSlider;
+    public Slider timeSlider;
+    public Slider poissonSlider;
+    public Slider iterationsSlider;
+    public Toggle activateToggleDef;
+    public Toggle activateToggleBump;
+    public Toggle activateToggleGauss;
+    public Toggle activateToggleShowGrid;
+    public Toggle activateToggleShowBump;
+
     // Types of brushes
     private BrushPhysicalFootprint brushPhysicalFootprint;
 
@@ -219,6 +232,11 @@ public class DeformTerrainMaster : MonoBehaviour
                     DefineMud();
                 else
                     DefineDefault();
+            }
+
+            if (useUI)
+            {
+                contactTime = timeSlider.value;
             }
         }
 

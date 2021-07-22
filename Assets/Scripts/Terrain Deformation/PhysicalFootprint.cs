@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 /// <summary>
@@ -81,8 +82,8 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public bool useManualBumpDeformation = false;
     [Range(0, 0.05f)] public double bumpHeightDeformation = 0.03f; // In case one wants to do it manually
     public int offsetBumpGrid = 2;
-    public int neighbourSearchArea = 1;
-    [Range(0, 0.5f)] public float poissonRatio = 0.4f; // TEST
+    public int neighboursSearchArea = 2;
+    [Range(0, 0.5f)] public float poissonR = 0.4f; // TEST
 
     [Header("Bump Deformation - Info")]
     public double newBumpHeightDeformationLeft = 0f; // TEST
@@ -153,11 +154,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         //       Initial Declarations      //
         // =============================== //
 
-        //Test
+        // If activated, takes the prefab information from the master script
         if (UseTerrainPrefabs)
         {
             youngModulus = YoungM;
-            poissonRatio = PoissonRatio;
+            poissonR = PoissonRatio;
             applyBumps = ActivateBump;
 
             if (FilterIte != 0)
@@ -172,6 +173,25 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 applyFilterLeft = false;
                 applyFilterRight = false;
             }
+        }
+
+        // If activated, takes the UI information from the interface
+        if (UseUI)
+        {
+            applyFootprints = ActivateToggleDef.isOn;
+            applyBumps = ActivateToggleBump.isOn;
+            applyFilterLeft = ActivateToggleGauss.isOn;
+            applyFilterRight = ActivateToggleGauss.isOn;
+
+            showGridDebugLeft = ActivateToggleShowGrid.isOn;
+            showGridDebugRight = ActivateToggleShowGrid.isOn;
+            showGridBumpDebug = ActivateToggleShowBump.isOn;
+
+            youngModulus = YoungSlider.value;
+            poissonR = PoissonSlider.value;
+            filterIterationsLeftFoot = (int)IterationsSlider.value;
+            filterIterationsRightFoot = (int)IterationsSlider.value;
+
         }
 
         // Reset counter hits
@@ -318,9 +338,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                     if (heightMapRightBool[zi + gridSize, xi + gridSize] == 0)
                     {
                         // Only checking adjacent cells - increasing this would allow increasing the area of the bump
-                        for (int zi_sub = -neighbourSearchArea; zi_sub <= neighbourSearchArea; zi_sub++)
+                        for (int zi_sub = -neighboursSearchArea; zi_sub <= neighboursSearchArea; zi_sub++)
                         {
-                            for (int xi_sub = -neighbourSearchArea; xi_sub <= neighbourSearchArea; xi_sub++)
+                            for (int xi_sub = -neighboursSearchArea; xi_sub <= neighboursSearchArea; xi_sub++)
                             {
                                 if (heightMapRightBool[zi + zi_sub + gridSize, xi + xi_sub + gridSize] == 2)
                                 {
@@ -352,9 +372,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                     if (heightMapLeftBool[zi + gridSize, xi + gridSize] == 0)
                     {
                         // Only checking adjacent cells - increasing this would allow increasing the area of the bump
-                        for (int zi_sub = -neighbourSearchArea; zi_sub <= neighbourSearchArea; zi_sub++)
+                        for (int zi_sub = -neighboursSearchArea; zi_sub <= neighboursSearchArea; zi_sub++)
                         {
-                            for (int xi_sub = -neighbourSearchArea; xi_sub <= neighbourSearchArea; xi_sub++)
+                            for (int xi_sub = -neighboursSearchArea; xi_sub <= neighboursSearchArea; xi_sub++)
                             {
                                 if (heightMapLeftBool[zi + zi_sub + gridSize, xi + xi_sub + gridSize] == 2)
                                 {
@@ -569,11 +589,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
         // Strains (compression) - Info
         strainLong = -(heightCellDisplacementYoungRight) / originalLength;
-        strainTrans = poissonRatio * strainLong;
+        strainTrans = poissonR * strainLong;
 
         // TEST - If Poisson is 0.5 : ideal imcompressible material (no change in volume) - Compression : -/delta_L
-        volumeVariationPoissonLeft = (1 - 2 * poissonRatio) * (-heightCellDisplacementYoungLeft / originalLength) * volumeOriginalLeft; // NEGATIVE CHANGE
-        volumeVariationPoissonRight = (1 - 2 * poissonRatio) * (-heightCellDisplacementYoungRight / originalLength) * volumeOriginalRight;
+        volumeVariationPoissonLeft = (1 - 2 * poissonR) * (-heightCellDisplacementYoungLeft / originalLength) * volumeOriginalLeft; // NEGATIVE CHANGE
+        volumeVariationPoissonRight = (1 - 2 * poissonR) * (-heightCellDisplacementYoungRight / originalLength) * volumeOriginalRight;
 
         //        Apply Deformation        //
         // =============================== //
