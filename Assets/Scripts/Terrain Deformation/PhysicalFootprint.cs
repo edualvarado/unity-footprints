@@ -1,4 +1,12 @@
-﻿using System;
+﻿/****************************************************
+ * File: PhysicalFootprint.cs
+   * Author: Eduardo Alvarado
+   * Email: eduardo.alvarado-pinero@polytechnique.edu
+   * Date: Created by LIX on 01/08/2021
+   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+*****************************************************/
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,7 +39,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     [Range(0f, 1f)] public float rayDistance = 0.1f;
     [Range(0f, 1f)] public float offsetRay = 0.04f;
 
-    [Header("Terrain Deformation - Settings (CONFIG)")]
+    [Header("Terrain Deformation - Settings - (CONFIG)")]
     [Space(20)]
     [Range(100000, 1000000)] public double youngModulus = 1000000;
     public float originalLength = 1f;
@@ -61,37 +69,37 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     [Header("Terrain Deformation - Volume Rod Approximation")]
     public double volumeOriginalLeft = 0f; // Original volume under left foot
     public double volumeOriginalRight = 0f; // Original volume under right foot
-    public double volumeTotalLeft = 0f; // TEST
-    public double volumeTotalRight = 0f; // TEST
-    public double volumeVariationPoissonLeft; // TEST
-    public double volumeVariationPoissonRight; // TEST
-    public double volumeDifferenceLeft; // TEST
-    public double volumeDifferenceRight; // TEST
-    public double volumeNetDifferenceLeft; // TEST
-    public double volumeNetDifferenceRight; // TEST
-    public double volumeCellLeft; // TEST
-    public double volumeCellRight; // TEST
+    public double volumeTotalLeft = 0f; // Volume left after deformation
+    public double volumeTotalRight = 0f; // Volume left after deformation
+    public double volumeVariationPoissonLeft; // Volume change due to compressibility of the material
+    public double volumeVariationPoissonRight; // Volume change due to compressibility of the material
+    public double volumeDifferenceLeft; // Volume difference pre/post deformation without taking into account compressibility
+    public double volumeDifferenceRight; // Volume difference pre/post deformation without taking into account compressibility
+    public double volumeNetDifferenceLeft; // Volume difference pre/post deformation taking into account compressibility
+    public double volumeNetDifferenceRight; // Volume difference pre/post deformation taking into account compressibility
+    public double volumeCellLeft; // Volume/cell distributed over countour
+    public double volumeCellRight; // Volume/cell distributed over countour
 
     [Header("Terrain Deformation - Pressure (Stress) by feet")]
     public float pressureStress;
     public float pressureStressLeft;
     public float pressureStressRight;
 
-    [Header("Bump Deformation - Settings (CONFIG)")]
+    [Header("Bump Deformation - Settings - (CONFIG)")]
     [Space(20)]
     public bool useManualBumpDeformation = false;
     [Range(0, 0.05f)] public double bumpHeightDeformation = 0.03f; // In case one wants to do it manually
     public int offsetBumpGrid = 2;
     public int neighboursSearchArea = 2;
-    [Range(0, 0.5f)] public float poissonR = 0.4f; // TEST
+    [Range(0, 0.5f)] public float poissonR = 0.4f;
 
-    [Header("Bump Deformation - Info")]
-    public double newBumpHeightDeformationLeft = 0f; // TEST
-    public double newBumpHeightDeformationRight = 0f; // TEST
-    public float bumpDisplacementLeftBack; // TEST
-    public float bumpDisplacementRightBack; // TEST
-    private float bumpDisplacementLeftFront; // TEST
-    private float bumpDisplacementRightFront; // TEST
+    [Header("Bump Deformation - Info")] // TODO - Still need to be checked
+    public double newBumpHeightDeformationLeft = 0f;
+    public double newBumpHeightDeformationRight = 0f;
+    public float bumpDisplacementLeftBack;
+    public float bumpDisplacementRightBack;
+    private float bumpDisplacementLeftFront;
+    private float bumpDisplacementRightFront;
     private float oldNeighbourAreaTotalLeft;
     private float oldNeighbourAreaTotalRight;
 
@@ -102,16 +110,16 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public float neighbourAreaTotalRight;
 
     [Header("Bump Deformation - Strains Info")]
-    public double strainLong; // TEST
-    public double strainTrans; // TEST
+    public double strainLong;
+    public double strainTrans;
 
     [Header("Bump Deformation - Bump Vector3 Coordinates")]
-    public List<Vector3> neighboursPositionsRightFront = new List<Vector3>(); // TEST
-    public List<Vector3> neighboursPositionsLeftFront = new List<Vector3>(); // TEST
-    public List<Vector3> neighboursPositionsRightBack = new List<Vector3>(); // TEST
-    public List<Vector3> neighboursPositionsLeftBack = new List<Vector3>(); // TEST
+    public List<Vector3> neighboursPositionsRightFront = new List<Vector3>();
+    public List<Vector3> neighboursPositionsLeftFront = new List<Vector3>();
+    public List<Vector3> neighboursPositionsRightBack = new List<Vector3>();
+    public List<Vector3> neighboursPositionsLeftBack = new List<Vector3>();
 
-    [Header("Filtering - Settings (CONFIG)")]
+    [Header("Filtering - Settings - (CONFIG)")]
     [Space(20)]
     public bool applyFilterLeft = false;
     public bool applyFilterRight = false;
@@ -127,9 +135,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
     // Others for filtering
     [Range(0, 5)] private int gridSizeKernel = 1;
-    //public bool applyPostFilter = false;
-    //public bool applyPreFilterLeft = false;
-    //public bool applyPreFilterRight = false;
 
     // Others
     private float[,] heightMapLeft;
@@ -191,7 +196,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             poissonR = PoissonSlider.value;
             filterIterationsLeftFoot = (int)IterationsSlider.value;
             filterIterationsRightFoot = (int)IterationsSlider.value;
-
         }
 
         // Reset counter hits
@@ -200,7 +204,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         neighbourCellsLeft = 0;
         neighbourCellsRight = 0;
 
-        // TEST
+        // Reset lists
         neighboursPositionsRightFront.Clear();
         neighboursPositionsLeftFront.Clear();
         neighboursPositionsRightBack.Clear();
@@ -415,7 +419,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                         // Store the Vector3 positions in a dynamic array
                         neighboursPositionsLeftFront.Add(rayGridWorldLeft);
 
-                        // TEST - 3 is contour in FRONT
+                        // TODO - 3 is contour in FRONT
                         heightMapLeftBool[zi + gridSize, xi + gridSize] = 3;
 
                         if (showGridBumpFrontBack)
@@ -426,7 +430,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                         // Store the Vector3 positions in a dynamic array
                         neighboursPositionsLeftBack.Add(rayGridWorldLeft);
 
-                        // TEST - 4 is contour in BACK
+                        // TODO - 4 is contour in BACK
                         heightMapLeftBool[zi + gridSize, xi + gridSize] = 4;
 
                         if (showGridBumpFrontBack)
@@ -451,7 +455,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                         // Store the Vector3 positions in a dynamic array
                         neighboursPositionsRightFront.Add(rayGridWorldRight);
 
-                        // TEST - 3 is contour in FRONT
+                        // TODO - 3 is contour in FRONT
                         heightMapRightBool[zi + gridSize, xi + gridSize] = 3;
 
                         if (showGridBumpFrontBack)
@@ -462,7 +466,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                         // Store the Vector3 positions in a dynamic array
                         neighboursPositionsRightBack.Add(rayGridWorldRight);
 
-                        // TEST - 4 is contour in BACK
+                        // TODO - 4 is contour in BACK
                         heightMapRightBool[zi + gridSize, xi + gridSize] = 4;
 
                         if (showGridBumpFrontBack)
@@ -473,8 +477,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 }
             }
         }
-
-        //
 
         // Calculate the neightbour area for each foot
         oldNeighbourAreaTotalLeft = ((neighbourCellsLeft) * areaCell);
@@ -532,7 +534,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             // Resulting volume under the left foot after displacement - CHANGED
             volumeTotalLeft = areaTotalLeft * (originalLength + (-heightCellDisplacementYoungLeft));
 
-            // TEST - Calculate the difference in volume, takes into account the compressibility and estimate volume up per neighbour cell
+            // TODO - Calculate the difference in volume, takes into account the compressibility and estimate volume up per neighbour cell
             volumeDifferenceLeft =  volumeTotalLeft - volumeOriginalLeft; // NEGATIVE CHANGE
             volumeNetDifferenceLeft = -volumeDifferenceLeft + volumeVariationPoissonLeft; // Calculate directly the volume in the bump upwards (positive)
             volumeCellLeft = volumeNetDifferenceLeft / neighbourCellsLeft;
@@ -542,8 +544,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
             // 2. In this case, we do it with volume. Remember: must be negative for later.
             newBumpHeightDeformationLeft = volumeCellLeft / areaCell;
-
-
         }
 
         oldHeightCellDisplacementYoungRight = pressureStressRight * (originalLength / (youngModulus));
@@ -555,7 +555,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             // Resulting volume under the right foot after displacement
             volumeTotalRight = areaTotalRight * (originalLength + (-heightCellDisplacementYoungRight));
 
-            // TEST - Calculate the difference in volume, takes into account the compressibility and estimate volume up per neighbour cell
+            // TODO - Calculate the difference in volume, takes into account the compressibility and estimate volume up per neighbour cell
             volumeDifferenceRight = volumeTotalRight - volumeOriginalRight; // NEGATIVE CHANGE
             volumeNetDifferenceRight = -volumeDifferenceRight + volumeVariationPoissonRight; // Calculate directly the volume in the bump upwards (positive)
             volumeCellRight = volumeNetDifferenceRight / neighbourCellsRight;
@@ -565,7 +565,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
             // 2. In this case, we do it with volume. Remember: must be negative for later.
             newBumpHeightDeformationRight = volumeCellRight / areaCell;
-
         }
 
         // Given the entire deformation in Y, we calculate the corresponding frame-based deformation based on the frame-time.
@@ -591,7 +590,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         strainLong = -(heightCellDisplacementYoungRight) / originalLength;
         strainTrans = poissonR * strainLong;
 
-        // TEST - If Poisson is 0.5 : ideal imcompressible material (no change in volume) - Compression : -/delta_L
+        // TODO - If Poisson is 0.5 : ideal imcompressible material (no change in volume) - Compression : -/delta_L
         volumeVariationPoissonLeft = (1 - 2 * poissonR) * (-heightCellDisplacementYoungLeft / originalLength) * volumeOriginalLeft; // NEGATIVE CHANGE
         volumeVariationPoissonRight = (1 - 2 * poissonR) * (-heightCellDisplacementYoungRight / originalLength) * volumeOriginalRight;
 
@@ -735,28 +734,28 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
         // This version of smoothing, does not set the terrain, only filters (return) the new heightmap
         // TODO - NOT WORKING YET - See function
-        if (applyFilterLeft2)
-        {
-            // Provisional: When do we smooth?
-            if (IsLeftFootGrounded && !IsRightFootGrounded)
-            {
-                if (!isFilteredLeft)
-                {
-                    heightMapLeft = NewFilterHeightMapReturn(xLeft, zLeft, heightMapLeft);
-                    filterIterationsLeftCounter++;
-                }
+        //if (applyFilterLeft2)
+        //{
+        //    // Provisional: When do we smooth?
+        //    if (IsLeftFootGrounded && !IsRightFootGrounded)
+        //    {
+        //        if (!isFilteredLeft)
+        //        {
+        //            heightMapLeft = NewFilterHeightMapReturn(xLeft, zLeft, heightMapLeft);
+        //            filterIterationsLeftCounter++;
+        //        }
 
-                if (filterIterationsLeftCounter >= filterIterationsLeftFoot)
-                {
-                    isFilteredLeft = true;
-                }
-            }
-            else
-            {
-                isFilteredLeft = false;
-                filterIterationsLeftCounter = 0;
-            }
-        }
+        //        if (filterIterationsLeftCounter >= filterIterationsLeftFoot)
+        //        {
+        //            isFilteredLeft = true;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        isFilteredLeft = false;
+        //        filterIterationsLeftCounter = 0;
+        //    }
+        //}
 
         // 2. Save terrain
         if (applyFootprints)
@@ -836,28 +835,28 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
         // This version of smoothing, does not set the terrain, only filters (return) the new heightmap
         // TODO - NOT WORKING YET - See function
-        if (applyFilterRight2)
-        {
-            // Provisional: When do we smooth?
-            if (IsRightFootGrounded && !IsLeftFootGrounded)
-            {
-                if (!isFilteredRight)
-                {
-                    heightMapRight = NewFilterHeightMapReturn(xRight, zRight, heightMapRight);
-                    filterIterationsRightCounter++;
-                }
+        //if (applyFilterRight2)
+        //{
+        //    // Provisional: When do we smooth?
+        //    if (IsRightFootGrounded && !IsLeftFootGrounded)
+        //    {
+        //        if (!isFilteredRight)
+        //        {
+        //            heightMapRight = NewFilterHeightMapReturn(xRight, zRight, heightMapRight);
+        //            filterIterationsRightCounter++;
+        //        }
 
-                if (filterIterationsRightCounter >= filterIterationsRightFoot)
-                {
-                    isFilteredRight = true;
-                }
-            }
-            else
-            {
-                isFilteredRight = false;
-                filterIterationsRightCounter = 0;
-            }
-        }
+        //        if (filterIterationsRightCounter >= filterIterationsRightFoot)
+        //        {
+        //            isFilteredRight = true;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        isFilteredRight = false;
+        //        filterIterationsRightCounter = 0;
+        //    }
+        //}
 
         // 2. Save terrain
         if (applyFootprints)
@@ -875,7 +874,8 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         yield return null;
     }
 
-    // Pre-filter Methods
+    // Pre-filter Methods - Not used //
+    // ============================= //
 
     private float[,] FilterBufferLeft(float[,] heightMapLeft, int[,] heightMapLeftBool)
     {
@@ -943,9 +943,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         return heightMapRightFiltered;
     }
 
-    // Post-filter Methods
+    // Post-filter Methods - Not used //
+    // ============================== //
 
-    // Old Gaussian Blur
+    // Old-version Gaussian Blur
     private void FilterHeightmap(int zLeft, int xLeft, float[,] heightmap)
     {
         float[,] result = TerrainData.GetHeights(0, 0, (int)terrain.GridSize().x, (int)terrain.GridSize().z);
@@ -988,7 +989,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         HeightMapFiltered = result;
     }
 
-    // New Gaussian Blur (3x3) 
+    // New-version Gaussian Blur (3x3) 
     public void NewFilterHeightMap(int x, int z, float[,] heightMap)
     {
         float[,] heightMapFiltered = new float[2 * gridSize + 1, 2 * gridSize + 1];
@@ -1017,7 +1018,8 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         }
     }
 
-    // New Gaussian Blur (3x3) - Return (TODO STILL NOT WORK - Version 1 works fine, so skipping)
+    // TEST - New Gaussian Blur (3x3) - Return (TODO STILL NOT WORK - Version 1 works fine, so skipping)
+    /*
     public float[,] NewFilterHeightMapReturn(int x, int z, float[,] heightMap)
     {
         float[,] heightMapFiltered = new float[2 * gridSize + 1, 2 * gridSize + 1];
@@ -1056,6 +1058,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
         return heightMapFiltered;
     }
+    */
 
     // TEST - Calculate Barycentric Coordinates Right
     /*

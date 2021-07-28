@@ -1,7 +1,18 @@
-﻿using System;
+﻿/****************************************************
+ * File: DrawForce.cs
+   * Author: Eduardo Alvarado
+   * Email: eduardo.alvarado-pinero@polytechnique.edu
+   * Date: Created by LIX on 01/08/2021
+   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+*****************************************************/
+
+using System;
 using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Functions to draw debug vectors
+/// </summary>
 public static class DrawForce
 {
     public static void ForGizmo(Vector3 pos, Vector3 direction, float arrowLength, float lengthMultiplier = 1f, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)

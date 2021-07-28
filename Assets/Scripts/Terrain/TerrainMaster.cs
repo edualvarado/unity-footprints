@@ -1,8 +1,19 @@
-﻿using System;
+﻿/****************************************************
+ * File: TerrainMaster.cs
+   * Author: Eduardo Alvarado
+   * Email: eduardo.alvarado-pinero@polytechnique.edu
+   * Date: Created by LIX on 01/08/2021
+   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+*****************************************************/
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Takes terrain data information
+/// </summary>
 public class TerrainMaster : MonoBehaviour
 {
     #region Variables
@@ -30,7 +41,7 @@ public class TerrainMaster : MonoBehaviour
     [Header("Modify Terrain")]
     public bool printFeetPositionsHeightmapWorld;
     public bool getFeetPositions = false;
-    public bool getFeetSensors = false;
+    //public bool getFeetSensors = false;
 
     private IKFeetPlacement _feetPlacement = null;
     private Rigidbody _rb = null;
@@ -76,17 +87,17 @@ public class TerrainMaster : MonoBehaviour
             ObtainFeetPositions(_feetPlacement.RightFootIKPosition);
         }
 
-        if(getFeetSensors)
-        {
-            DetectFeetOnFloor(_feetPlacement.LeftFootIKPosition);
-            DetectFeetOnFloor(_feetPlacement.RightFootIKPosition);
-        }
+        //if(getFeetSensors)
+        //{
+        //    DetectFeetOnFloor(_feetPlacement.LeftFootIKPosition);
+        //    DetectFeetOnFloor(_feetPlacement.RightFootIKPosition);
+        //}
     }
 
-    private void DetectFeetOnFloor(Vector3 footIKPosition)
-    {
-        //Vector3 hitFeet = Vector3.zero;
-    }
+    //private void DetectFeetOnFloor(Vector3 footIKPosition)
+    //{
+    //    Vector3 hitFeet = Vector3.zero;
+    //}
 
     /// <summary>
     /// Gets Terrain Slope angle (sign changes if going up or down).

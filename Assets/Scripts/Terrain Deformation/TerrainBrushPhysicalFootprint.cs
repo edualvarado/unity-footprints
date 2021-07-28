@@ -1,7 +1,18 @@
-﻿using System.Collections;
+﻿/****************************************************
+ * File: TerrainBrushPhysicalFootprint.cs
+   * Author: Eduardo Alvarado
+   * Email: eduardo.alvarado-pinero@polytechnique.edu
+   * Date: Created by LIX on 01/08/2021
+   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+*****************************************************/
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Abstract class to call brush for footprint drawing
+/// </summary>
 public abstract class TerrainBrushPhysicalFootprint : BrushPhysicalFootprint
 {
     public override void CallFootprint(float xLeft, float zLeft, float xRight, float zRight)

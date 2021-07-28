@@ -23,6 +23,6 @@ public class DistributionBump : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log("deformTerrainMaster: ");
+        Debug.Log("deformTerrainMaster");
     }
 }

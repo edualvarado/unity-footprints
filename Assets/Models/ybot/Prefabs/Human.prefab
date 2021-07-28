@@ -736,7 +736,6 @@ GameObject:
   - component: {fileID: 7472311892719195145}
   - component: {fileID: 6670947232552304507}
   - component: {fileID: 6778515188118054271}
-  - component: {fileID: 1946298034948894562}
   m_Layer: 0
   m_Name: ybot
   m_TagString: Untagged
@@ -772,7 +771,7 @@ Animator:
   m_GameObject: {fileID: 789043916090222048}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: a8532d6a497909943ab5dde6577673f0, type: 3}
-  m_Controller: {fileID: 9100000, guid: 6783b5959d3e5114baa97d57f43a3619, type: 2}
+  m_Controller: {fileID: 9100000, guid: 585cd9d9b6e481349ae550c104062ea5, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -876,6 +875,7 @@ MonoBehaviour:
   pelvisOffset: 0
   pelvisUpAndDownSpeed: 0.05
   feetToIKPositionSpeed: 0.2
+  drawSensorRayGrounder: 0
   isLeftFootGrounded: 0
   isRightFootGrounded: 0
   groundCheckerLeftFootBack: {fileID: 793392221}
@@ -887,22 +887,6 @@ MonoBehaviour:
   rightFootAnimVariableName: RightFootCurve
   useProIKFeature: 0
   showSolverDebug: 0
---- !u!114 &1946298034948894562
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 789043916090222048}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1dbcadfda13ca0499eaf15d9652fc9f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showTerrainNormalAngleDebug: 0
-  printFeetPositionsHeightmapWorld: 0
-  getFeetPositions: 0
-  getFeetSensors: 0
 --- !u!1 &1293142738677098554
 GameObject:
   m_ObjectHideFlags: 0

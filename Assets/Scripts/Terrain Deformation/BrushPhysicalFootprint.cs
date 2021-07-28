@@ -1,6 +1,17 @@
-﻿using UnityEngine;
+﻿/****************************************************
+ * File: BrushPhysicalFootprint.cs
+   * Author: Eduardo Alvarado
+   * Email: eduardo.alvarado-pinero@polytechnique.edu
+   * Date: Created by LIX on 01/08/2021
+   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+*****************************************************/
+
+using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// General parent class to create brushses that affect the ground (e.g. footprint brush).
+/// </summary>
 abstract public class BrushPhysicalFootprint : MonoBehaviour
 {
     #region Variables
@@ -35,19 +46,19 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     private Vector3 totalForce;
     private Vector3 totalForceLeft;
     private Vector3 totalForceRight;
-
-    // TEST
     private float minTotalForceLeftFootZNorm;
     private float maxTotalForceLeftFootZNorm;
     private float minTotalForceRightFootZNorm;
     private float maxTotalForceRightFootZNorm;
 
-    // Materials
+    // Material/Ground
     private bool useTerrainPrefabs;
     private double youngM;
     private int filterIte;
     private float poissonRatio;
     private bool activateBump;
+
+    // UI
     private bool useUI;
     private Slider youngSlider;
     private Slider poissonSlider;
@@ -61,30 +72,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     #endregion
 
     #region Body Properties
-
-    public float MinTotalForceLeftFootZNorm
-    {
-        get { return minTotalForceLeftFootZNorm; }
-        set { minTotalForceLeftFootZNorm = value; }
-    }
-
-    public float MaxTotalForceLeftFootZNorm
-    {
-        get { return maxTotalForceLeftFootZNorm; }
-        set { maxTotalForceLeftFootZNorm = value; }
-    }
-
-    public float MinTotalForceRightFootZNorm
-    {
-        get { return minTotalForceRightFootZNorm; }
-        set { minTotalForceRightFootZNorm = value; }
-    }
-
-    public float MaxTotalForceRightFootZNorm
-    {
-        get { return maxTotalForceRightFootZNorm; }
-        set { maxTotalForceRightFootZNorm = value; }
-    }
 
     public float Mass
     {
@@ -184,6 +171,30 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     #endregion
 
     #region Force Properties
+
+    public float MinTotalForceLeftFootZNorm
+    {
+        get { return minTotalForceLeftFootZNorm; }
+        set { minTotalForceLeftFootZNorm = value; }
+    }
+
+    public float MaxTotalForceLeftFootZNorm
+    {
+        get { return maxTotalForceLeftFootZNorm; }
+        set { maxTotalForceLeftFootZNorm = value; }
+    }
+
+    public float MinTotalForceRightFootZNorm
+    {
+        get { return minTotalForceRightFootZNorm; }
+        set { minTotalForceRightFootZNorm = value; }
+    }
+
+    public float MaxTotalForceRightFootZNorm
+    {
+        get { return maxTotalForceRightFootZNorm; }
+        set { maxTotalForceRightFootZNorm = value; }
+    }
 
     public float ContactTime
     {
@@ -348,7 +359,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         TotalForceLeft = terrain.totalGRForceLeft;
         TotalForceRight = terrain.totalGRForceRight;
 
-        // TEST
+        // Keep track of min and max forces reached during the gait
         MinTotalForceLeftFootZNorm = terrain.minTotalForceLeftFootZNorm;
         MaxTotalForceLeftFootZNorm = terrain.maxTotalForceLeftFootZNorm;
         MinTotalForceRightFootZNorm = terrain.minTotalForceRightFootZNorm;

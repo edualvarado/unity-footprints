@@ -1,14 +1,25 @@
-﻿using System;
+﻿/****************************************************
+ * File: DeformTerrainMaster.cs
+   * Author: Eduardo Alvarado
+   * Email: eduardo.alvarado-pinero@polytechnique.edu
+   * Date: Created by LIX on 01/08/2021
+   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+*****************************************************/
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Master class where we calculate all forces taking place during gait and call footprint child class.
+/// </summary>
 public class DeformTerrainMaster : MonoBehaviour
 {
     #region Variables
 
-    [Header("Bipedal - To be filled")]
+    [Header("Bipedal - (CONFIG)")]
     [Tooltip("Your character - make sure is the parent GameObject")]
     public GameObject myBipedalCharacter;
     [Tooltip("Collider attached to Left Foot")]
@@ -87,7 +98,7 @@ public class DeformTerrainMaster : MonoBehaviour
     private float minTotalForceRightFootZOld = 0f;
     private float maxTotalForceRightFootZOld = 0f;
 
-    [Header("Terrain Deformation - Contact Time Settings (CONFIG)")]
+    [Header("Terrain Deformation - Contact Time Settings - (CONFIG)")]
     [Space(20)]
     public float timePassed = 0f;
     [Tooltip("Time that the terrain requires to absorve the force from the hitting foot. More time results in a smaller require force. On the other hand, for less time, the terrain requires a larger force to stop the foot.")]
@@ -95,7 +106,7 @@ public class DeformTerrainMaster : MonoBehaviour
     [Tooltip("Small delay, sometimes needed, to give the system enough time to perform the deformation.")]
     public float offset = 0.5f;
 
-    [Header("Terrain Prefabs - Settings (CONFIG)")]
+    [Header("Terrain Prefabs - Settings - (CONFIG)")]
     [Space(20)]
     public bool useTerrainPrefabs = false;
     public double youngModulusSnow = 200000;
@@ -114,7 +125,7 @@ public class DeformTerrainMaster : MonoBehaviour
     public bool bumpMud = false;
     public int filterIterationsMud = 2;
 
-    [Header("Use UI for Demo mode")]
+    [Header("UI for DEMO mode")]
     [Space(20)]
     public bool useUI;
     public Slider youngSlider;
@@ -203,9 +214,6 @@ public class DeformTerrainMaster : MonoBehaviour
         // Retrieve components and attributes from character
         mass = myBipedalCharacter.GetComponent<Rigidbody>().mass;
         _anim = myBipedalCharacter.GetComponent<Animator>();
-
-        // Time elapsed -> TODO: Smoothing
-        //elapsed = 0f;
 
         // Old Feet Y-component position
         oldIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
@@ -297,28 +305,6 @@ public class DeformTerrainMaster : MonoBehaviour
         //       Bipedal Information       //
         // =============================== //
 
-        // Calculate Velocity for the feet //
-        // =============================== //
-
-        //newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
-        //newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
-        //var mediaLeft = (newIKLeftPosition - oldIKLeftPosition);
-        //var mediaRight = (newIKRightPosition - oldIKRightPosition);
-
-        //feetSpeedLeft = new Vector3((mediaLeft.x / Time.deltaTime), (mediaLeft.y / Time.deltaTime), (mediaLeft.z / Time.deltaTime));
-        //feetSpeedRight = new Vector3((mediaRight.x / Time.deltaTime), (mediaRight.y / Time.deltaTime), (mediaRight.z / Time.deltaTime));
-
-        //oldIKLeftPosition = newIKLeftPosition;
-        //oldIKRightPosition = newIKRightPosition;
-
-        //newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
-        //newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
-
-        //if (drawVelocities)
-        //{
-        //    DrawForce.ForDebug3D(newIKLeftPosition, -feetSpeedLeft, Color.cyan, 0.0025f);
-        //}
-
         //  Calculate Forces for the feet  //
         // =============================== //
 
@@ -357,12 +343,12 @@ public class DeformTerrainMaster : MonoBehaviour
 
             //--------------
 
+            // ake only velocities going downward //
+            // ================================== //
+
             // Impulse per foot - Linear Momentum change (final velocity for the feet is 0)
             //feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
             //feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
-
-            // PROVISIONAL TEST - CAREFUL! Take only velocities going downward //
-            // =============================================================== //
 
             if (feetSpeedLeft.y <= 0f)
                 feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
@@ -375,7 +361,7 @@ public class DeformTerrainMaster : MonoBehaviour
             else
                 feetImpulseRight = Vector3.zero;
 
-            // =========================== //
+            // ================================== //
 
             //--------------
 
@@ -410,6 +396,7 @@ public class DeformTerrainMaster : MonoBehaviour
             //    DrawForce.ForDebug3D(centerGridRightFootHeight, momentumForceRight, Color.red, 0.0025f);
             //}
 
+            // Momentum Forces are created when we hit the ground
             if (drawMomentumForces && isMoving && isLeftFootGrounded)
             {
                 DrawForce.ForDebug3D(centerGridLeftFootHeight, momentumForceLeft, Color.red, 0.0025f);
@@ -434,7 +421,7 @@ public class DeformTerrainMaster : MonoBehaviour
             totalGRForceYFloat = totalGRForce.y;
             // ============================================= //
 
-            // Other color
+            // Color for GR Forces
             Color darkGreen = new Color(0.074f, 0.635f, 0.062f, 1f);
 
             // GRF is already zero if the foot is not grounded - however, we draw only when foot is grounded
@@ -488,6 +475,15 @@ public class DeformTerrainMaster : MonoBehaviour
                 minTotalForceLeftFootZNorm = 0f;
             }
 
+            // Reset Values
+            if (!isRightFootGrounded)
+            {
+                maxTotalForceRightFootZ = 0f;
+                minTotalForceRightFootZ = 0f;
+                maxTotalForceRightFootZNorm = 0f;
+                minTotalForceRightFootZNorm = 0f;
+            }
+
             // Save max/min values reached for the feet forces in Z
             maxTotalForceRightFootZOld = totalForceRightFoot.z;
             if (maxTotalForceRightFootZOld > maxTotalForceRightFootZ)
@@ -501,15 +497,6 @@ public class DeformTerrainMaster : MonoBehaviour
             {
                 minTotalForceRightFootZ = minTotalForceRightFootZOld;
                 minTotalForceRightFootZNorm = totalForceRightFoot.normalized.z;
-            }
-
-            // Reset Values
-            if (!isRightFootGrounded)
-            {
-                maxTotalForceRightFootZ = 0f;
-                minTotalForceRightFootZ = 0f;
-                maxTotalForceRightFootZNorm = 0f;
-                minTotalForceRightFootZNorm = 0f;
             }
 
             //--------------
@@ -560,7 +547,6 @@ public class DeformTerrainMaster : MonoBehaviour
             Debug.Log("[INFO] Right Foot Coords (World): " + _feetPlacement.RightFootIKPosition.ToString());
             Debug.Log("[INFO] Right Foot Coords (Grid): " + centerGridRightFoot.ToString());
             Debug.Log("-----------------------------------------");
-
         }
 
         // Print the forces
@@ -647,6 +633,7 @@ public class DeformTerrainMaster : MonoBehaviour
         }
     }
 
+    // Methods use to define new materials
     public void DefineSnow()
     {
         brushPhysicalFootprint.YoungM = youngModulusSnow;
@@ -675,6 +662,7 @@ public class DeformTerrainMaster : MonoBehaviour
         brushPhysicalFootprint.PoissonRatio = poissonRatioMud;
         brushPhysicalFootprint.ActivateBump = bumpMud;
     }
+
     public void DefineDefault()
     {
         brushPhysicalFootprint.YoungM = 750000;
@@ -682,6 +670,20 @@ public class DeformTerrainMaster : MonoBehaviour
         brushPhysicalFootprint.PoissonRatio = 0f;
         brushPhysicalFootprint.ActivateBump = false;
     }
+
+    // ========================= //
+    // Define here your material // 
+
+    //public void DefineExample()
+    //{
+    //    brushPhysicalFootprint.YoungM = youngModulusExample;
+    //    brushPhysicalFootprint.FilterIte = timeExamlpe;
+    //    brushPhysicalFootprint.PoissonRatio = filterIterationsExample;
+    //    brushPhysicalFootprint.ActivateBump = bumpExample;
+    //}
+
+    // ========================= //
+
 
     //      Getters       //
     // ================== //
