@@ -1,4 +1,13 @@
-﻿using System.Collections;
+﻿/****************************************************
+ * File: RigidBodyControllerSimpleAnimator.cs
+   * Author: Eduardo Alvarado
+   * Email: eduardo.alvarado-pinero@polytechnique.edu
+   * Date: Created by LIX on 01/08/2021
+   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+   * Last update: 28/07/2021
+*****************************************************/
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
