@@ -190,7 +190,7 @@ public class DeformTerrainMaster : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Extract terrain information
+        // 1. Extract terrain information
         if (!terrain)
         {
             //terrain = Terrain.activeTerrain;
@@ -208,10 +208,10 @@ public class DeformTerrainMaster : MonoBehaviour
         heightmap_data_filtered = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
         brushPhysicalFootprint = null;
 
-        // Get classes
+        // 2. Get classes
         _feetPlacement = FindObjectOfType<IKFeetPlacement>();
 
-        // Retrieve components and attributes from character
+        // 2. Retrieve components and attributes from character
         mass = myBipedalCharacter.GetComponent<Rigidbody>().mass;
         _anim = myBipedalCharacter.GetComponent<Animator>();
 
@@ -227,7 +227,7 @@ public class DeformTerrainMaster : MonoBehaviour
         //       Initial Information       //
         // =============================== //
 
-        // Define type of terrain where we are
+        // 1. Define type of terrain where we are
         if (brushPhysicalFootprint)
         {
             if (useTerrainPrefabs)
@@ -248,7 +248,7 @@ public class DeformTerrainMaster : MonoBehaviour
             }
         }
 
-        // If we change the terrain, we change the data as well - both must have different GameObject names
+        // 2. If we change the terrain, we change the data as well - both must have different GameObject names
         if (terrain.name != myBipedalCharacter.GetComponent<RigidBodyControllerSimpleAnimator>().currentTerrain.name)
         {
             // Extract terrain information
@@ -265,7 +265,7 @@ public class DeformTerrainMaster : MonoBehaviour
             heightmap_data_filtered = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
         }
 
-        // Saving other variables for debugging purposes
+        // 3. Saving other variables for debugging purposes
         heightIKLeft = _feetPlacement.LeftFootIKPosition.y;
         heightIKRight = _feetPlacement.RightFootIKPosition.y;
 
@@ -278,7 +278,7 @@ public class DeformTerrainMaster : MonoBehaviour
         centerGridLeftFootHeight = new Vector3(_feetPlacement.LeftFootIKPosition.x, Get(centerGridLeftFoot.x, centerGridLeftFoot.z), _feetPlacement.LeftFootIKPosition.z);
         centerGridRightFootHeight = new Vector3(_feetPlacement.RightFootIKPosition.x, Get(centerGridRightFoot.x, centerGridRightFoot.z), _feetPlacement.RightFootIKPosition.z);
 
-        // Calculate Proportion Feet Pivot //
+        // 4. Calculate Proportion Feet Pivot //
         // =============================== //
 
         // 1. Bipedal -- _anim.pivotWeight only for bipedals
@@ -305,12 +305,12 @@ public class DeformTerrainMaster : MonoBehaviour
         //       Bipedal Information       //
         // =============================== //
 
-        //  Calculate Forces for the feet  //
+        //  1. Calculate Forces for the feet  //
         // =============================== //
 
         if (brushPhysicalFootprint)
         {
-            // Weight Forces - Negative Y-component
+            // A. Weight Forces - Negative Y-component
             weightForce = mass * (Physics.gravity);
             weightForceLeft = weightForce * (weightInLeftFoot);
             weightForceRight = weightForce * (weightInRightFoot);
@@ -346,7 +346,7 @@ public class DeformTerrainMaster : MonoBehaviour
             // ake only velocities going downward //
             // ================================== //
 
-            // Impulse per foot - Linear Momentum change (final velocity for the feet is 0)
+            // B. Impulse per foot - Linear Momentum change (final velocity for the feet is 0)
             //feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
             //feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
 
@@ -365,7 +365,7 @@ public class DeformTerrainMaster : MonoBehaviour
 
             //--------------
 
-            // Net force exerted by ground to each foot - Calculated using Impulse and Contact Time
+            // C. Momentum force exerted by ground to each foot - Calculated using Impulse and Contact Time
             // Positive (upward) if foot lands (negative velocity)
             // Negative (downward) if foot rises (positive velocity)
             momentumForceLeft = feetImpulseLeft / contactTime;
@@ -409,7 +409,7 @@ public class DeformTerrainMaster : MonoBehaviour
 
             //--------------
 
-            // GRF (Ground Reaction Force) that the ground exerts to each foot
+            // D. GRF (Ground Reaction Force) that the ground exerts to each foot
             totalGRForceLeft = momentumForceLeft - (weightForceLeft);
             totalGRForceRight = momentumForceRight - (weightForceRight);
             totalGRForce = totalGRForceLeft + totalGRForceRight;
@@ -445,7 +445,7 @@ public class DeformTerrainMaster : MonoBehaviour
 
             //--------------
 
-            // Reaction Force for the feet (3rd Newton Law)
+            // E. Reaction Force for the feet (3rd Newton Law)
             totalForceLeftFoot = -totalGRForceLeft;
             totalForceRightFoot = -totalGRForceRight;
             totalForceFoot = totalForceLeftFoot + totalForceRightFoot;
@@ -475,15 +475,6 @@ public class DeformTerrainMaster : MonoBehaviour
                 minTotalForceLeftFootZNorm = 0f;
             }
 
-            // Reset Values
-            if (!isRightFootGrounded)
-            {
-                maxTotalForceRightFootZ = 0f;
-                minTotalForceRightFootZ = 0f;
-                maxTotalForceRightFootZNorm = 0f;
-                minTotalForceRightFootZNorm = 0f;
-            }
-
             // Save max/min values reached for the feet forces in Z
             maxTotalForceRightFootZOld = totalForceRightFoot.z;
             if (maxTotalForceRightFootZOld > maxTotalForceRightFootZ)
@@ -497,6 +488,15 @@ public class DeformTerrainMaster : MonoBehaviour
             {
                 minTotalForceRightFootZ = minTotalForceRightFootZOld;
                 minTotalForceRightFootZNorm = totalForceRightFoot.normalized.z;
+            }
+
+            // Reset Values
+            if (!isRightFootGrounded)
+            {
+                maxTotalForceRightFootZ = 0f;
+                minTotalForceRightFootZ = 0f;
+                maxTotalForceRightFootZNorm = 0f;
+                minTotalForceRightFootZNorm = 0f;
             }
 
             //--------------
@@ -539,7 +539,7 @@ public class DeformTerrainMaster : MonoBehaviour
 
         // =============================== //
 
-        // Print the position of the feet in both systems (world and grid)
+        // F. Print the position of the feet in both systems (world and grid)
         if (printFeetPositions)
         {
             Debug.Log("[INFO] Left Foot Coords (World): " + _feetPlacement.LeftFootIKPosition.ToString());
@@ -570,7 +570,7 @@ public class DeformTerrainMaster : MonoBehaviour
 
         // =============================== //
 
-        // Apply brush to feet
+        // 2. Apply brush to feet
         if (brushPhysicalFootprint)
         {
             // Brush is only called if we are within the contactTime.
@@ -584,8 +584,8 @@ public class DeformTerrainMaster : MonoBehaviour
             }
         }
 
-        // Provisional: We reset the time passed everytime when we lift the feet.
-        // Not very accurate, it would be better to create a time variable per feet and pass it though the method.
+        // 3. Provisional: We reset the time passed everytime when we lift the feet.
+        // A. Not very accurate, it would be better to create a time variable per feet and pass it though the method.
         if ((!isLeftFootGrounded || !isRightFootGrounded) && isMoving)
         {
             timePassed = 0f;
@@ -598,7 +598,7 @@ public class DeformTerrainMaster : MonoBehaviour
             provCounter += 1;
         }
 
-        // Provisional: Each time I change motion, resets the time.
+        // B. Provisional: Each time I change motion, resets the time.
         isMoving = _anim.GetBool("isWalking");
         if (isMoving != oldIsMoving)
         {

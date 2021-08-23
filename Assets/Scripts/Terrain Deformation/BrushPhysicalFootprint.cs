@@ -342,16 +342,16 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     void Update()
     {
-        // Retrieve each frame public variables from DeformTerrainMaster.cs
+        // 1. Retrieve each frame public variables from DeformTerrainMaster.cs
 
-        // Velocity of feet - Calculated in DeformTerrainMaster.cs
+        // A. Velocity of feet - Calculated in DeformTerrainMaster.cs
         FeetSpeedLeftY = terrain.feetSpeedLeft.y; 
         FeetSpeedRightY = terrain.feetSpeedRight.y;
         FeetSpeedLeft = terrain.feetSpeedLeft;
         FeetSpeedRight = terrain.feetSpeedRight;
 
         // Gravity + Reaction Force - Calculated in DeformTerrainMaster.cs
-        // Only need magnitude in this case - that is why we take the GRF (is fine!)
+        // B. Only need magnitude in this case - that is why we take the GRF (is fine!)
         TotalForceY = terrain.totalGRForce.y;
         TotalForceLeftY = terrain.totalGRForceLeft.y; 
         TotalForceRightY = terrain.totalGRForceRight.y;
@@ -359,17 +359,17 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         TotalForceLeft = terrain.totalGRForceLeft;
         TotalForceRight = terrain.totalGRForceRight;
 
-        // Keep track of min and max forces reached during the gait
+        // C. Keep track of min and max forces reached during the gait
         MinTotalForceLeftFootZNorm = terrain.minTotalForceLeftFootZNorm;
         MaxTotalForceLeftFootZNorm = terrain.maxTotalForceLeftFootZNorm;
         MinTotalForceRightFootZNorm = terrain.minTotalForceRightFootZNorm;
         MaxTotalForceRightFootZNorm = terrain.maxTotalForceRightFootZNorm;
 
-        // Are the feet grounded?
+        // D. Are the feet grounded?
         IsLeftFootGrounded = terrain.isLeftFootGrounded;
         IsRightFootGrounded = terrain.isRightFootGrounded;
 
-        // Get if we are using prefabs option
+        // E. Get if we are using prefabs option
         UseTerrainPrefabs = terrain.useTerrainPrefabs;
 
         // Get if we are using the UI
@@ -413,7 +413,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         return active;
     }
 
-    // Virtual method that is used to pass the feet positions and create the physically-based footprint
+    // 2. Virtual method that is used to pass the feet positions and create the physically-based footprint
     public virtual void CallFootprint(float xLeft, float zLeft, float xRight, float zRight)
     {
         DrawFootprint(xLeft, zLeft, xRight, zRight);

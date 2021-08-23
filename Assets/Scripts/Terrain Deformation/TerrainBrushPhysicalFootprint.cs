@@ -17,14 +17,14 @@ public abstract class TerrainBrushPhysicalFootprint : BrushPhysicalFootprint
 {
     public override void CallFootprint(float xLeft, float zLeft, float xRight, float zRight)
     {
-        // Pass the positions though here to convert them wrt Heightmap before calling final brush
+        // 1. 2. Pass the positions though here to convert them wrt Heightmap before calling final brush
         Vector3 gridLeft = terrain.World2Grid(xLeft, zLeft);
         Vector3 gridRight = terrain.World2Grid(xRight, zRight);
 
-        // Call Footprint method and filter it 
+        // 3. Call Footprint method and filter it 
         DrawFootprint((int)gridLeft.x, (int)gridLeft.z, (int)gridRight.x, (int)gridRight.z);
 
-        // Save the terrain
+        // 4. Save the terrain
         terrain.Save();
     }
 
