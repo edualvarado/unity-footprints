@@ -1,5 +1,5 @@
 ﻿/****************************************************
- * File: BrushPhysicalFootprint.cs
+ * File: BrushPhysicalFootprintSphere.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
    * Date: Created by LIX on 01/08/2021
@@ -27,9 +27,9 @@ abstract public class BrushPhysicalFootprintSphere : MonoBehaviour
 
     // Body Properties
     private float mass;
-    private bool isLeftFootGrounded;
+    private bool isSphereGrounded;
     private bool isRightFootGrounded;
-    private Collider leftFootCollider;
+    private Collider mySphereCollider;
     private Collider rightFootCollider;
     private float weightInLeftFoot;
     private float weightInRightFoot;
@@ -79,37 +79,16 @@ abstract public class BrushPhysicalFootprintSphere : MonoBehaviour
         set { mass = value; }
     }
 
-    public bool IsLeftFootGrounded
+    public bool IsSphereGrounded
     {
-        get { return isLeftFootGrounded; }
-        set { isLeftFootGrounded = value; }
-    }
-    public bool IsRightFootGrounded
-    {
-        get { return isRightFootGrounded; }
-        set { isRightFootGrounded = value; }
+        get { return isSphereGrounded; }
+        set { isSphereGrounded = value; }
     }
 
-    public Collider LeftFootCollider
+    public Collider MySphereCollider
     {
-        get { return leftFootCollider; }
-        set { leftFootCollider = value; }
-    }
-    public Collider RightFootCollider
-    {
-        get { return rightFootCollider; }
-        set { rightFootCollider = value; }
-    }
-
-    public float WeightInLeftFoot
-    {
-        get { return weightInLeftFoot; }
-        set { weightInLeftFoot = value; }
-    }
-    public float WeightInRightFoot
-    {
-        get { return weightInRightFoot; }
-        set { weightInRightFoot = value; }
+        get { return mySphereCollider; }
+        set { mySphereCollider = value; }
     }
 
     #endregion
@@ -207,21 +186,11 @@ abstract public class BrushPhysicalFootprintSphere : MonoBehaviour
         get { return feetSpeedLeftY; }
         set { feetSpeedLeftY = value; }
     }
-    public float FeetSpeedRightY
-    {
-        get { return feetSpeedRightY; }
-        set { feetSpeedRightY = value; }
-    }
 
     public Vector3 FeetSpeedLeft
     {
         get { return feetSpeedLeft; }
         set { feetSpeedLeft = value; }
-    }
-    public Vector3 FeetSpeedRight
-    {
-        get { return feetSpeedRight; }
-        set { feetSpeedRight = value; }
     }
 
     public float TotalForceSphereY
@@ -229,97 +198,11 @@ abstract public class BrushPhysicalFootprintSphere : MonoBehaviour
         get { return totalForceLeftY; }
         set { totalForceLeftY = value; }
     }
-    public float TotalForceRightY
-    {
-        get { return totalForceRightY; }
-        set { totalForceRightY = value; }
-    }
-
-    public float TotalForceY
-    {
-        get { return totalForceY; }
-        set { totalForceY = value; }
-    }
 
     public Vector3 TotalForceSphere
     {
         get { return totalForceLeft; }
         set { totalForceLeft = value; }
-    }
-    public Vector3 TotalForceRight
-    {
-        get { return totalForceRight; }
-        set { totalForceRight = value; }
-    }
-
-    public Vector3 TotalForce
-    {
-        get { return totalForce; }
-        set { totalForce = value; }
-    }
-
-    #endregion
-
-    #region Other Properties
-
-    public bool UseTerrainPrefabs
-    {
-        get { return useTerrainPrefabs; }
-        set { useTerrainPrefabs = value; }
-    }
-
-    public bool UseUI
-    {
-        get { return useUI; }
-        set { useUI = value; }
-    }
-
-    public Slider YoungSlider
-    {
-        get { return youngSlider; }
-        set { youngSlider = value; }
-    }
-
-    public Slider PoissonSlider
-    {
-        get { return poissonSlider; }
-        set { poissonSlider = value; }
-    }
-
-    public Slider IterationsSlider
-    {
-        get { return iterationsSlider; }
-        set { iterationsSlider = value; }
-    }
-
-    public Toggle ActivateToggleDef
-    {
-        get { return activateToggleDef; }
-        set { activateToggleDef = value; }
-    }
-
-    public Toggle ActivateToggleBump
-    {
-        get { return activateToggleBump; }
-        set { activateToggleBump = value; }
-    }
-
-    public Toggle ActivateToggleGauss
-    {
-        get { return activateToggleGauss; }
-        set { activateToggleGauss = value; }
-    }
-
-    public Toggle ActivateToggleShowGrid
-    {
-        get { return activateToggleShowGrid; }
-        set { activateToggleShowGrid = value; }
-    }
-
-    public Toggle ActivateToggleShowBump
-    {
-        get { return activateToggleShowBump; }
-        set { activateToggleShowBump = value; }
     }
 
     #endregion
@@ -330,7 +213,7 @@ abstract public class BrushPhysicalFootprintSphere : MonoBehaviour
         terrain = GetComponent<DeformTerrainMasterSphere>();
 
         // Retrieve once public variables from DeformTerrainMaster.cs
-        LeftFootCollider = terrain.mySphereCollider;
+        MySphereCollider = terrain.mySphereCollider;
         Mass = terrain.mass;
         ContactTime = terrain.contactTime;
 
@@ -345,9 +228,7 @@ abstract public class BrushPhysicalFootprintSphere : MonoBehaviour
 
         // A. Velocity of feet - Calculated in DeformTerrainMaster.cs
         FeetSpeedLeftY = terrain.sphereSpeed.y; 
-        //FeetSpeedRightY = terrain.feetSpeedRight.y;
         FeetSpeedLeft = terrain.sphereSpeed;
-        //FeetSpeedRight = terrain.feetSpeedRight;
 
         // Gravity + Reaction Force - Calculated in DeformTerrainMaster.cs
         // B. Only need magnitude in this case - that is why we take the GRF (is fine!)
@@ -361,22 +242,7 @@ abstract public class BrushPhysicalFootprintSphere : MonoBehaviour
         //MaxTotalForceRightFootZNorm = terrain.maxTotalForceRightFootZNorm;
 
         // D. Are the feet grounded?
-        IsLeftFootGrounded = terrain.isSphereGrounded;
-        //IsRightFootGrounded = terrain.isRightFootGrounded;
-
-        // E. Get if we are using prefabs option
-        //UseTerrainPrefabs = terrain.useTerrainPrefabs;
-
-        // Get if we are using the UI
-        //UseUI = terrain.useUI;
-        //YoungSlider = terrain.youngSlider;
-        //PoissonSlider = terrain.poissonSlider;
-        //IterationsSlider = terrain.iterationsSlider;
-        //ActivateToggleDef = terrain.activateToggleDef;
-        //ActivateToggleBump = terrain.activateToggleBump;
-        //ActivateToggleGauss = terrain.activateToggleGauss;
-        //ActivateToggleShowGrid = terrain.activateToggleShowGrid;
-        //ActivateToggleShowBump = terrain.activateToggleShowBump;
+        IsSphereGrounded = terrain.isSphereGrounded;
     }
 
     public void Deactivate()

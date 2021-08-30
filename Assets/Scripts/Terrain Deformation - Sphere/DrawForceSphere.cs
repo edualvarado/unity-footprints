@@ -1,5 +1,5 @@
 ﻿/****************************************************
- * File: DrawForce.cs
+ * File: DrawForceSphere.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
    * Date: Created by LIX on 01/08/2021
@@ -15,7 +15,7 @@ using System.Collections;
 /// </summary>
 public static class DrawForceSphere
 {
-    public static void ForGizmo(Vector3 pos, Vector3 direction, float arrowLength, float lengthMultiplier = 1f, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
+    public static void ForGizmoSphere(Vector3 pos, Vector3 direction, float arrowLength, float lengthMultiplier = 1f, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
     {
         Gizmos.DrawRay(pos, direction * Math.Abs(arrowLength) * lengthMultiplier);
 
@@ -25,7 +25,7 @@ public static class DrawForceSphere
         Gizmos.DrawRay(pos + direction * arrowLength * lengthMultiplier, left * arrowHeadLength);
     }
 
-    public static void ForGizmo(Vector3 pos, Vector3 direction, float arrowLength, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
+    public static void ForGizmoSphere(Vector3 pos, Vector3 direction, float arrowLength, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
     {
         Gizmos.color = color;
         Gizmos.DrawRay(pos, direction * Math.Abs(arrowLength) * lengthMultiplier);
@@ -36,7 +36,7 @@ public static class DrawForceSphere
         Gizmos.DrawRay(pos + direction * arrowLength * lengthMultiplier, left * arrowHeadLength);
     }
 
-    public static void ForDebug(Vector3 pos, float arrowLength, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
+    public static void ForDebugSphere(Vector3 pos, float arrowLength, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
     {
         Vector3 direction;
 
@@ -52,7 +52,7 @@ public static class DrawForceSphere
         Debug.DrawRay(pos + (direction * arrowLength * lengthMultiplier), right * arrowHeadLength);
         Debug.DrawRay(pos + (direction * arrowLength * lengthMultiplier), left * arrowHeadLength);
     }
-    public static void ForDebug(Vector3 pos, float arrowLength, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
+    public static void ForDebugSphere(Vector3 pos, float arrowLength, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
     {
         Vector3 direction;
 
@@ -69,7 +69,7 @@ public static class DrawForceSphere
         Debug.DrawRay(pos + (direction * Math.Abs(arrowLength) * lengthMultiplier), left * arrowHeadLength, color);
     }
 
-    public static void ForDebug3D(Vector3 pos, Vector3 direction, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
+    public static void ForDebug3DSphere(Vector3 pos, Vector3 direction, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
     {
         if(direction != Vector3.zero)
         {
@@ -81,11 +81,11 @@ public static class DrawForceSphere
             Debug.DrawRay(pos + (direction * lengthMultiplier), left * arrowHeadLength);
         }
     }
-    public static void ForDebug3D(Vector3 pos, Vector3 direction, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
+    public static void ForDebug3DSphere(Vector3 pos, Vector3 direction, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
     {
         float reduce = 0.5f;
 
-        pos = pos + new Vector3(0.5f, 0, 0);
+        //pos = pos + new Vector3(0.5f, 0, 0);
 
         if (direction != Vector3.zero)
         {
@@ -95,6 +95,20 @@ public static class DrawForceSphere
             Vector3 left = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 - arrowHeadAngle, 0) * Quaternion.Euler(-30, 0, 0) * new Vector3(0, 0, 1);
             Debug.DrawRay(pos + (reduce * direction * lengthMultiplier), right * arrowHeadLength, color);
             Debug.DrawRay(pos + (reduce * direction * lengthMultiplier), left * arrowHeadLength, color);
+        }
+    }
+
+    public static void ForDebug3DSphereSpeed(Vector3 pos, Vector3 direction, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
+    {
+
+        if (direction != Vector3.zero)
+        {
+            Debug.DrawRay(pos, direction * lengthMultiplier, color);
+
+            Vector3 right = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 + arrowHeadAngle, 0) * Quaternion.Euler(30, 0, 0) * new Vector3(0, 0, 1);
+            Vector3 left = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 - arrowHeadAngle, 0) * Quaternion.Euler(-30, 0, 0) * new Vector3(0, 0, 1);
+            Debug.DrawRay(pos + (direction * lengthMultiplier), right * arrowHeadLength, color);
+            Debug.DrawRay(pos + (direction * lengthMultiplier), left * arrowHeadLength, color);
         }
     }
 }

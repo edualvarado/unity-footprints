@@ -22,13 +22,13 @@ public class DeformTerrainMasterSphere : MonoBehaviour
     [Header("Sphere - (CONFIG)")]
     [Tooltip("Your character - make sure is the parent GameObject")]
     public GameObject mySphere;
-    [Tooltip("Collider attached to Left Foot")]
+    [Tooltip("Collider attached to Sphere")]
     public Collider mySphereCollider;
 
     [Header("Sphere - System Info")]
     public float mass;
 
-    [Header("Sphere - Feet Info")]
+    [Header("Sphere - Info")]
     public bool printSpherePositions = false;
     public bool isSphereGrounded = false;
 
@@ -44,7 +44,7 @@ public class DeformTerrainMasterSphere : MonoBehaviour
     public bool drawWeightForces = false;
     public bool drawMomentumForces = false;
     public bool drawGRForces = false;
-    public bool drawFeetForces = false;
+    public bool drawSphereTotalForces = false;
     public bool drawVelocities = false;
 
     [Header("Sphere - Physics - Weight Forces Info")]
@@ -167,28 +167,18 @@ public class DeformTerrainMasterSphere : MonoBehaviour
             //weightForceYFloat = weightForce.y;
             // ============================================= //
 
-            // Weight Force is already zero if the foot is not grounded - however, we draw only when foot is grounded
-            //if (drawWeightForces && !isMoving)
-            //{
-            //    DrawForce.ForDebug3D(centerGridLeftFootHeight, weightForceLeft, Color.blue, 0.0025f);
-            //    DrawForce.ForDebug3D(centerGridRightFootHeight, weightForceRight, Color.blue, 0.0025f);
-            //}
-            //else
-            //{
-            //    if (drawWeightForces && isSphereGrounded)
-            //    {
-            //        DrawForce.ForDebug3D(centerGridLeftFootHeight, weightForceLeft, Color.blue, 0.0025f);
-            //    }
+            //                Vector Plotting                //
+            // ============================================= //
 
-            //    if (drawWeightForces && isRightFootGrounded)
-            //    {
-            //        DrawForce.ForDebug3D(centerGridRightFootHeight, weightForceRight, Color.blue, 0.0025f);
-            //    }
-            //}
+            // Weight Force is already zero if the foot is not grounded - however, we draw only when foot is grounded
+            if (drawWeightForces && isSphereGrounded)
+            {
+                DrawForceSphere.ForDebug3DSphere(centerGridSphereHeight, weightForce, Color.blue, 0.0025f);
+            }
 
             //--------------
 
-            // ake only velocities going downward //
+            // Only velocities going downward //
             // ================================== //
 
             // B. Impulse per foot - Linear Momentum change (final velocity for the feet is 0)
@@ -221,6 +211,9 @@ public class DeformTerrainMasterSphere : MonoBehaviour
             //    momentumForceYFloat = momentumForce.y;
             // ===================================================================== //
 
+            //                Vector Plotting                //
+            // ============================================= //
+
             // Momentum Forces are created when we hit the ground (that is, when such forces are positive in y, and the feet are grounded)
             //if (drawMomentumForces && isMoving && momentumForceLeft.y > 0f && isLeftFootGrounded)
             //{
@@ -233,15 +226,10 @@ public class DeformTerrainMasterSphere : MonoBehaviour
             //}
 
             // Momentum Forces are created when we hit the ground
-            //if (drawMomentumForces && isMoving && isSphereGrounded)
-            //{
-            //    DrawForce.ForDebug3D(centerGridLeftFootHeight, momentumForceLeft, Color.red, 0.0025f);
-            //}
-
-            //if (drawMomentumForces && isMoving && isRightFootGrounded)
-            //{
-            //    DrawForce.ForDebug3D(centerGridRightFootHeight, momentumForceRight, Color.red, 0.0025f);
-            //}
+            if (drawMomentumForces && isSphereGrounded)
+            {
+                DrawForceSphere.ForDebug3DSphere(centerGridSphereHeight, momentumForceSphere, Color.red, 0.0025f);
+            }
 
             //--------------
 
@@ -255,27 +243,17 @@ public class DeformTerrainMasterSphere : MonoBehaviour
             //totalGRForceYFloat = totalGRForce.y;
             // ============================================= //
 
+            //                Vector Plotting                //
+            // ============================================= //
+
             // Color for GR Forces
             Color darkGreen = new Color(0.074f, 0.635f, 0.062f, 1f);
 
             // GRF is already zero if the foot is not grounded - however, we draw only when foot is grounded
-            //if (drawGRForces && !isMoving)
-            //{
-            //    DrawForce.ForDebug3D(centerGridLeftFootHeight, totalGRForceLeft, darkGreen, 0.0025f);
-            //    DrawForce.ForDebug3D(centerGridRightFootHeight, totalGRForceRight, darkGreen, 0.0025f);
-            //}
-            //else
-            //{
-            //    if (drawGRForces && isSphereGrounded)
-            //    {
-            //        DrawForce.ForDebug3D(centerGridLeftFootHeight, totalGRForceLeft, darkGreen, 0.0025f);
-            //    }
-
-            //    if (drawGRForces && isRightFootGrounded)
-            //    {
-            //        DrawForce.ForDebug3D(centerGridRightFootHeight, totalGRForceRight, darkGreen, 0.0025f);
-            //    }
-            //}
+            if (drawGRForces && isSphereGrounded)
+            {
+                DrawForceSphere.ForDebug3DSphere(centerGridSphereHeight, totalGRForceSphere, darkGreen, 0.0025f);
+            }
 
             //--------------
 
@@ -333,40 +311,31 @@ public class DeformTerrainMasterSphere : MonoBehaviour
 
             //--------------
 
+            //                Vector Plotting                //
+            // ============================================= //
+
             // Feet Forces are created when we hit the ground (that is, when the Y-component of the Momentum Force is positive)
             // Only when the feet rise up, Feet Forces do not exist. The muscle is the responsable to lift the foot up
             // Also, the foot must be grounded to have a Feet Force actuating onto the ground
-            //if (drawFeetForces && !isMoving)
-            //{
-            //    DrawForce.ForDebug3D(centerGridLeftFootHeight, totalForceLeftFoot, Color.black, 0.0025f);
-            //    DrawForce.ForDebug3D(centerGridRightFootHeight, totalForceRightFoot, Color.black, 0.0025f);
-            //}
-            //else
-            //{
-            //    if (drawFeetForces && momentumForceLeft.y > 0f && isSphereGrounded)
-            //    {
-            //        DrawForce.ForDebug3D(centerGridLeftFootHeight, totalForceLeftFoot, Color.black, 0.0025f);
-            //    }
-
-            //    if (drawFeetForces && momentumForceRight.y > 0f && isRightFootGrounded)
-            //    {
-            //        DrawForce.ForDebug3D(centerGridRightFootHeight, totalForceRightFoot, Color.black, 0.0025f);
-            //    }
-
-            //    //if (drawFeetForces && isLeftFootGrounded)
-            //    //{
-            //    //    DrawForce.ForDebug3D(centerGridLeftFootHeight, totalForceLeftFoot, Color.black, 0.0025f);
-            //    //}
-
-            //    //if (drawFeetForces && isRightFootGrounded)
-            //    //{
-            //    //    DrawForce.ForDebug3D(centerGridRightFootHeight, totalForceRightFoot, Color.black, 0.0025f);
-            //    //}
-
-            //}
+            if (drawSphereTotalForces && momentumForceSphere.y > 0f && isSphereGrounded)
+            {
+                DrawForceSphere.ForDebug3DSphere(centerGridSphereHeight, totalForceSphere, Color.black, 0.0025f);
+            }
+            else if (drawSphereTotalForces && isSphereGrounded)
+            {
+                DrawForceSphere.ForDebug3DSphere(centerGridSphereHeight, totalForceSphere, Color.black, 0.0025f);
+            }
         }
 
         // =============================== //
+
+        //                Vector Plotting                //
+        // ============================================= //
+
+        if (drawVelocities)
+        {
+            DrawForceSphere.ForDebug3DSphereSpeed(mySphere.transform.position, sphereSpeed, Color.cyan, 0.0025f);
+        }
 
         // F. Print the position of the feet in both systems (world and grid)
         if (printSpherePositions)
@@ -380,13 +349,9 @@ public class DeformTerrainMasterSphere : MonoBehaviour
         if (printSphereForces)
         {
             Debug.Log("[INFO] Weight Force: " + weightForce);
-
             Debug.Log("[INFO] Sphere Speed: " + sphereSpeed);
-
             Debug.Log("[INFO] Sphere Impulse: " + impulseSphere);
-
             Debug.Log("[INFO] GRF Sphere: " + totalGRForceSphere);
-
             Debug.Log("[INFO] Total Force Sphere: " + totalForceSphere);
             Debug.Log("-----------------------------------------");
         }
@@ -398,16 +363,20 @@ public class DeformTerrainMasterSphere : MonoBehaviour
         {
             // Brush is only called if we are within the contactTime.
             // Due to the small values, the provisional solution requires to add an offset to give the system enough time to create the footprint.
-            
-            if (isSphereGrounded)
-                timePassed += Time.deltaTime;
 
-            if ((timePassed <= contactTime + offset) && isSphereGrounded)
+            //if (isSphereGrounded)
+            //    timePassed += Time.deltaTime;
+
+            //if ((timePassed <= contactTime + offset) && isSphereGrounded)
+            //{
+            //    // Brush that takes limbs positions and creates physically-based footprints
+            //    brushPhysicalFootprint.CallFootprint(mySphere.transform.position.x, mySphere.transform.position.z);
+            //}
+
+            if (timePassed <= contactTime + offset)
             {
                 // Brush that takes limbs positions and creates physically-based footprints
                 brushPhysicalFootprint.CallFootprint(mySphere.transform.position.x, mySphere.transform.position.z);
-                //brushPhysicalFootprint.CallFootprint(_feetPlacement.LeftFootIKPosition.x, _feetPlacement.LeftFootIKPosition.z,
-                //    _feetPlacement.RightFootIKPosition.x, _feetPlacement.RightFootIKPosition.z);
             }
         }
 
@@ -423,16 +392,11 @@ public class DeformTerrainMasterSphere : MonoBehaviour
         newIKSpherePosition = mySphere.transform.position; // Before: LeftFoot
         var mediaLeft = (newIKSpherePosition - oldIKSpherePosition);
 
-        sphereSpeed = new Vector3((mediaLeft.x / Time.fixedDeltaTime), (mediaLeft.y / Time.fixedDeltaTime), (mediaLeft.z / Time.fixedDeltaTime));
+        //sphereSpeed = new Vector3((mediaLeft.x / Time.fixedDeltaTime), (mediaLeft.y / Time.fixedDeltaTime), (mediaLeft.z / Time.fixedDeltaTime));
+        sphereSpeed = mySphere.GetComponent<Rigidbody>().velocity;
 
         oldIKSpherePosition = newIKSpherePosition;
-
         newIKSpherePosition = mySphere.transform.position;
-
-        //if (drawVelocities)
-        //{
-        //    DrawForce.ForDebug3D(newIKLeftPosition, -feetSpeedLeft, Color.cyan, 0.0025f);
-        //}
     }
 
     //      Getters       //

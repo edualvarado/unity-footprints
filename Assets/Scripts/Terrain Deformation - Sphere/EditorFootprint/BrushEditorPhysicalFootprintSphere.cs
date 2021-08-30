@@ -1,5 +1,5 @@
 ﻿/****************************************************
- * File: BrushEditorPhysicalFootprint.cs
+ * File: BrushEditorPhysicalFootprintSphere.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
    * Date: Created by LIX on 01/08/2021

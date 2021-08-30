@@ -130,8 +130,8 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     private int filterIterationsRightCounter = 0;
     private bool isFilteredLeft = false;
     private bool isFilteredRight = false;
-    private bool applyFilterLeft2 = false;
-    private bool applyFilterRight2 = false;
+    //private bool applyFilterLeft2 = false;
+    //private bool applyFilterRight2 = false;
 
     // Others for filtering
     [Range(0, 5)] private int gridSizeKernel = 1;
