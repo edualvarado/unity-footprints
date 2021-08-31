@@ -11,9 +11,11 @@ GRForceLeft, GRForceRight, GRForce = [], [], []
 
 # Limits plot
 minLimitX = 475
-maxLimitX = 600
+maxLimitX = 620
 minLimitY = 400
 maxLimitY = 1000
+
+legendX = 0.0425
 
 # Data file and value assignation
 with open("..\..\plotting_cache\\all_forces_walking_gait.txt") as f:
@@ -31,11 +33,17 @@ with open("..\..\plotting_cache\\all_forces_walking_gait.txt") as f:
         GRForce.append(values[8])
 
 
-# Max and min total Forces
+# Max and min GR Forces
 GRForceLeftMax = max(GRForceLeft)
 idxLeftMax = GRForceLeft.index(GRForceLeftMax)
 GRForceRightMax = max(GRForceRight)
 idxRightMax = GRForceRight.index(GRForceRightMax)
+
+# Max and min momentum Forces
+momentumLeftMax = max(momentumForceExertedByGroundLeft)
+idxMomentumLeftMax = momentumForceExertedByGroundLeft.index(momentumLeftMax)
+momentumRightMax = max(momentumForceExertedByGroundRight)
+idxMomentumRightMax = momentumForceExertedByGroundRight.index(momentumRightMax)
 
 # Create just a figure and only one subplot
 fig, ax = plt.subplots(5)
@@ -49,27 +57,35 @@ ax[0].plot(idx, weightForceRightY, label='Weight Force - Right Foot', color="roy
 
 ax[0].set_ylabel('Force (Y) [N]')
 ax[0].set_xlabel('Timestamp')
-ax[0].set_title('Weight Forces - Walking Gait')
-ax[0].legend(loc = "lower left")
+ax[0].set_title('Weight Forces')
+
+ax[0].legend(bbox_to_anchor=(0., 1.05, legendX, 0.), loc='lower left', ncol=1, mode="expand", borderaxespad=0.)
 
 # Show max/min value with arrow
-ax[0].annotate(weightForceLeftY[idxLeftMax], xy=(idxLeftMax, weightForceLeftY[idxLeftMax]), xytext=(idxLeftMax, weightForceLeftY[idxLeftMax] + 185), arrowprops=dict(facecolor='black', shrink=0.01))
+#ax[0].annotate(weightForceLeftY[idxLeftMax], xy=(idxLeftMax, weightForceLeftY[idxLeftMax]), xytext=(idxLeftMax, weightForceLeftY[idxLeftMax] + 315), arrowprops=dict(facecolor='black', shrink=0.01))
+ax[0].annotate('{0:3.0f} N'.format(weightForceLeftY[idxMomentumLeftMax]), xy=(idxMomentumLeftMax, weightForceLeftY[idxMomentumLeftMax]), xytext=(idxMomentumLeftMax, weightForceLeftY[idxMomentumLeftMax] + 315), arrowprops=dict(facecolor='black', shrink=0.01))
 
 ax[0].set_xlim([minLimitX, maxLimitX])
+ax[0].set_ylim([-800, 50])
 ax[0].grid()
 
 ###
 
 # 2. Plot Momentum Forces
-ax[1].plot(idx, momentumForceExertedByGroundLeft, label='Momentum Force Exerted by Ground - Left Foot', color="maroon")
-ax[1].plot(idx, momentumForceExertedByGroundRight, label='Momentum Force Exerted by Ground - Right Foot', color="red")
+ax[1].plot(idx, momentumForceExertedByGroundLeft, label='Momentum Force - Left Foot', color="maroon")
+ax[1].plot(idx, momentumForceExertedByGroundRight, label='Momentum Force - Right Foot', color="red")
 
-ax[1].set_ylabel('Momentum Force (Y) [N]')
+ax[1].set_ylabel('Force (Y) [N]')
 ax[1].set_xlabel('Timestamp')
-ax[1].set_title('Positive Momentum Forces Exerted By Ground - Walking Gait')
-ax[1].legend(loc = "lower left")
+ax[1].set_title('Positive Momentum Forces Exerted By Ground')
+
+ax[1].legend(bbox_to_anchor=(0., 1.05, legendX, .102), loc='lower left', ncol=1, mode="expand", borderaxespad=0.)
+
+#ax[1].annotate(momentumForceExertedByGroundLeft[idxLeftMax], xy=(idxLeftMax, momentumForceExertedByGroundLeft[idxLeftMax]), xytext=(idxLeftMax, momentumForceExertedByGroundLeft[idxLeftMax] + 150), arrowprops=dict(facecolor='black', shrink=0.01))
+ax[1].annotate('{0:3.1f} N'.format(momentumForceExertedByGroundLeft[idxMomentumLeftMax]), xy=(idxMomentumLeftMax, momentumForceExertedByGroundLeft[idxMomentumLeftMax]), xytext=(idxMomentumLeftMax, momentumForceExertedByGroundLeft[idxMomentumLeftMax] + 150), arrowprops=dict(facecolor='green', shrink=0.01))
 
 ax[1].set_xlim([minLimitX, maxLimitX])
+ax[1].set_ylim([-50, 400])
 ax[1].grid()
 
 ###
@@ -78,21 +94,24 @@ ax[1].grid()
 ax[2].plot(idx, GRForceLeft, label='Ground Reaction Force - Left Foot', color="darkgreen")
 ax[2].plot(idx, GRForceRight, label='Ground Reaction Force - Right Foot', color="lime")
 
-ax[2].annotate(GRForceLeftMax, xy=(idxLeftMax, GRForceLeftMax), xytext=(idxLeftMax, GRForceLeftMax + 185), arrowprops=dict(facecolor='black', shrink=0.01))
+#ax[2].annotate(GRForceLeftMax, xy=(idxLeftMax, GRForceLeftMax), xytext=(idxLeftMax, GRForceLeftMax + 400), arrowprops=dict(facecolor='green', shrink=0.01))
+ax[2].annotate('{0:3.1f} N'.format(GRForceLeft[idxMomentumLeftMax]), xy=(idxMomentumLeftMax, GRForceLeft[idxMomentumLeftMax]), xytext=(idxMomentumLeftMax, GRForceLeft[idxMomentumLeftMax] + 400), arrowprops=dict(facecolor='black', shrink=0.01))
 
 ax[2].set_ylabel('Force (Y) [N]')
 ax[2].set_xlabel('Timestamp')
-ax[2].set_title('Ground Reaction Force (GRF) - Walking Gait')
-ax[2].legend(loc = "lower left")
+ax[2].set_title('Ground Reaction Force (GRF)')
+
+ax[2].legend(bbox_to_anchor=(0., 1.05, legendX, .102), loc='lower left', ncol=1, mode="expand", borderaxespad=0.)
 
 ax[2].set_xlim([minLimitX, maxLimitX])
+ax[2].set_ylim([-100, 1000])
 ax[2].grid()
 
 ###
 
 # 4. Plot GRFs total
 ax[3].scatter(idx, GRForce)
-ax[3].plot(idx, np.abs(weightForceY), '-', label='Absolute Weight Force - Total', color="blue")
+ax[3].plot(idx, np.abs(weightForceY), '-', label='Absolute Weight Force - Both feet', color="blue")
 
 x_sm = np.array(idx)
 y_sm = np.array(GRForce)
@@ -100,16 +119,18 @@ X_Y_Spline = make_interp_spline(x_sm, y_sm)
 X_ = np.linspace(x_sm.min(), x_sm.max(), 1000)
 Y_ = X_Y_Spline(X_)
 
-ax[3].plot(X_, Y_, label='Ground Reaction Force - Total', color="lime")
+ax[3].plot(X_, Y_, label='GRF - Both feet', color="limegreen")
 
 ax[3].set_ylabel('Force (Y) [N]')
 ax[3].set_xlabel('Timestamp')
-ax[3].set_title('Ground Reaction Force (GRF) - Walking Gait')
+ax[3].set_title('Ground Reaction Force (GRF)')
 
 ax[3].set_xlim([minLimitX, maxLimitX])
 ax[3].set_ylim([minLimitY, maxLimitY])
 
-ax[3].legend(loc = "lower left")
+ax[3].annotate('{0:3.1f} N'.format(GRForce[idxMomentumLeftMax]), xy=(idxMomentumLeftMax, GRForce[idxMomentumLeftMax]), xytext=(idxMomentumLeftMax, GRForce[idxMomentumLeftMax] + 230), arrowprops=dict(facecolor='black', shrink=0.01))
+
+ax[3].legend(bbox_to_anchor=(0., 1.05, legendX, .102), loc='lower left', ncol=1, mode="expand", borderaxespad=0.)
 
 ax[3].grid()
 
@@ -124,16 +145,19 @@ X_Y_Spline = make_interp_spline(x_sm, y_sm)
 X_ = np.linspace(x_sm.min(), x_sm.max(), 2000)
 Y_ = X_Y_Spline(X_)
 
-ax[4].plot(X_, Y_, label='Normalized Ground Reaction Force - Total', color="lime")
+ax[4].plot(X_, Y_, label='Normalized GRF - Both feet', color="limegreen")
 
 ax[4].set_ylabel('Force (Y) [N]')
 ax[4].set_xlabel('Timestamp')
-ax[4].set_title('Normalized Ground Reaction Force (GRF) - Walking Gait')
+ax[4].set_title('Normalized Ground Reaction Force (GRF)')
 
 ax[4].set_xlim([minLimitX, maxLimitX])
-ax[4].set_ylim([-3, 3])
+ax[4].set_ylim([-4, 4])
 
-ax[4].legend(loc = "lower left")
+#ax[4].annotate('{0:.3g}'.format(GRForceNorm[idxLeftMax]), xy=(idxLeftMax, GRForceNorm[idxLeftMax]), xytext=(idxLeftMax, GRForceNorm[idxLeftMax] + 3), arrowprops=dict(facecolor='black', shrink=0.01))
+ax[4].annotate('{0:.3g}'.format(GRForceNorm[idxMomentumLeftMax]), xy=(idxMomentumLeftMax, GRForceNorm[idxMomentumLeftMax]), xytext=(idxMomentumLeftMax, GRForceNorm[idxMomentumLeftMax] + 3), arrowprops=dict(facecolor='black', shrink=0.01))
+
+ax[4].legend(bbox_to_anchor=(0., 1.05, legendX, .102), loc='lower left', ncol=1, mode="expand", borderaxespad=0.)
 
 ax[4].grid()
 
