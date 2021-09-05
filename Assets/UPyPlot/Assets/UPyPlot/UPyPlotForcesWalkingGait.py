@@ -77,7 +77,8 @@ ax[1].plot(idx, momentumForceExertedByGroundRight, label='Momentum Force - Right
 
 ax[1].set_ylabel('Force (Y) [N]')
 ax[1].set_xlabel('Timestamp')
-ax[1].set_title('Positive Momentum Forces Exerted By Ground')
+#ax[1].set_title('Positive Momentum Forces Exerted By Ground')
+ax[1].set_title('Positive Momentum Forces')
 
 ax[1].legend(bbox_to_anchor=(0., 1.05, legendX, .102), loc='lower left', ncol=1, mode="expand", borderaxespad=0.)
 
@@ -123,7 +124,8 @@ ax[3].plot(X_, Y_, label='GRF - Both feet', color="limegreen")
 
 ax[3].set_ylabel('Force (Y) [N]')
 ax[3].set_xlabel('Timestamp')
-ax[3].set_title('Ground Reaction Force (GRF)')
+#ax[3].set_title('Ground Reaction Force (GRF)')
+ax[3].set_title('Ground Reaction Force')
 
 ax[3].set_xlim([minLimitX, maxLimitX])
 ax[3].set_ylim([minLimitY, maxLimitY])
@@ -147,9 +149,10 @@ Y_ = X_Y_Spline(X_)
 
 ax[4].plot(X_, Y_, label='Normalized GRF - Both feet', color="limegreen")
 
-ax[4].set_ylabel('Force (Y) [N]')
+ax[4].set_ylabel('Normalized Force (Y) [N/kg]')
 ax[4].set_xlabel('Timestamp')
-ax[4].set_title('Normalized Ground Reaction Force (GRF)')
+#ax[4].set_title('Normalized Ground Reaction Force (GRF)')
+ax[4].set_title('Normalized Ground Reaction Force')
 
 ax[4].set_xlim([minLimitX, maxLimitX])
 ax[4].set_ylim([-4, 4])

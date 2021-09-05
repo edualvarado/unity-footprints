@@ -471,7 +471,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 370383752}
-  m_LocalRotation: {x: 0.12398983, y: 0.48852605, z: -0.07036545, w: 0.8608238}
+  m_LocalRotation: {x: 0.12398983, y: 0.48852602, z: -0.070365444, w: 0.8608238}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -794,13 +794,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
-  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalRotation: {x: 0.3173153, y: 0.631911, z: -0.32469368, w: 0.6281509}
+  m_LocalPosition: {x: 7.01, y: 2.86, z: 2.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 53.998, y: 90, z: -0.671}
 --- !u!1 &775627160
 GameObject:
   m_ObjectHideFlags: 0
@@ -1527,10 +1527,10 @@ MonoBehaviour:
   centerGridLeftFootHeight: {x: 0, y: 0, z: 0}
   centerGridRightFootHeight: {x: 0, y: 0, z: 0}
   printFeetForces: 0
-  drawWeightForces: 1
-  drawMomentumForces: 1
-  drawGRForces: 1
-  drawFeetForces: 1
+  drawWeightForces: 0
+  drawMomentumForces: 0
+  drawGRForces: 0
+  drawFeetForces: 0
   drawVelocities: 0
   weightForce: {x: 0, y: 0, z: 0}
   weightForceLeft: {x: 0, y: 0, z: 0}
@@ -1559,22 +1559,32 @@ MonoBehaviour:
   timePassed: 0
   contactTime: 0.1
   offset: 0.5
-  useTerrainPrefabs: 0
+  useTerrainPrefabs: 1
   youngModulusSnow: 250000
   timeSnow: 0.2
   poissonRatioSnow: 0
   bumpSnow: 0
-  filterIterationsSnow: 1
-  youngModulusDrySand: 700000
+  filterIterationsSnow: 5
+  youngModulusDrySand: 600000
   timeDrySand: 0.3
-  poissonRatioSand: 0.49
+  poissonRatioSand: 0.35
   bumpSand: 1
-  filterIterationsSand: 1
-  youngModulusMud: 250000
+  filterIterationsSand: 20
+  youngModulusMud: 350000
   timeMud: 0.5
-  poissonRatioMud: 0.05
+  poissonRatioMud: 0.15
   bumpMud: 1
-  filterIterationsMud: 2
+  filterIterationsMud: 15
+  useUI: 0
+  youngSlider: {fileID: 0}
+  timeSlider: {fileID: 0}
+  poissonSlider: {fileID: 0}
+  iterationsSlider: {fileID: 0}
+  activateToggleDef: {fileID: 0}
+  activateToggleBump: {fileID: 0}
+  activateToggleGauss: {fileID: 0}
+  activateToggleShowGrid: {fileID: 0}
+  activateToggleShowBump: {fileID: 0}
 --- !u!114 &1758997916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1618,6 +1628,8 @@ MonoBehaviour:
   volumeVariationPoissonRight: 0
   volumeDifferenceLeft: 0
   volumeDifferenceRight: 0
+  volumeNetDifferenceLeft: 0
+  volumeNetDifferenceRight: 0
   volumeCellLeft: 0
   volumeCellRight: 0
   pressureStress: 0
@@ -1626,8 +1638,8 @@ MonoBehaviour:
   useManualBumpDeformation: 0
   bumpHeightDeformation: 0.029999999329447746
   offsetBumpGrid: 2
-  neighbourSearchArea: 1
-  poissonRatio: 0.4
+  neighboursSearchArea: 2
+  poissonR: 0.4
   newBumpHeightDeformationLeft: 0
   newBumpHeightDeformationRight: 0
   bumpDisplacementLeftBack: 0
