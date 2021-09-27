@@ -36,10 +36,10 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     // Physics
     private float contactTime;
-    private float feetSpeedLeftY;
-    private float feetSpeedRightY;
-    private Vector3 feetSpeedLeft;
-    private Vector3 feetSpeedRight;
+    //private float feetSpeedLeftY;
+    //private float feetSpeedRightY;
+    //private Vector3 feetSpeedLeft;
+    //private Vector3 feetSpeedRight;
     private float totalForceY;
     private float totalForceLeftY;
     private float totalForceRightY;
@@ -50,6 +50,10 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     private float maxTotalForceLeftFootZNorm;
     private float minTotalForceRightFootZNorm;
     private float maxTotalForceRightFootZNorm;
+    private Vector3 realTotalForceLeft;
+    private Vector3 realTotalForceRight;
+    private Vector3 centerGridLeftFootHeight;
+    private Vector3 centerGridRightFootHeight;
 
     // Material/Ground
     private bool useTerrainPrefabs;
@@ -202,27 +206,27 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         set { contactTime = value; }
     }
 
-    public float FeetSpeedLeftY
-    {
-        get { return feetSpeedLeftY; }
-        set { feetSpeedLeftY = value; }
-    }
-    public float FeetSpeedRightY
-    {
-        get { return feetSpeedRightY; }
-        set { feetSpeedRightY = value; }
-    }
+    //public float FeetSpeedLeftY
+    //{
+    //    get { return feetSpeedLeftY; }
+    //    set { feetSpeedLeftY = value; }
+    //}
+    //public float FeetSpeedRightY
+    //{
+    //    get { return feetSpeedRightY; }
+    //    set { feetSpeedRightY = value; }
+    //}
 
-    public Vector3 FeetSpeedLeft
-    {
-        get { return feetSpeedLeft; }
-        set { feetSpeedLeft = value; }
-    }
-    public Vector3 FeetSpeedRight
-    {
-        get { return feetSpeedRight; }
-        set { feetSpeedRight = value; }
-    }
+    //public Vector3 FeetSpeedLeft
+    //{
+    //    get { return feetSpeedLeft; }
+    //    set { feetSpeedLeft = value; }
+    //}
+    //public Vector3 FeetSpeedRight
+    //{
+    //    get { return feetSpeedRight; }
+    //    set { feetSpeedRight = value; }
+    //}
 
     public float TotalForceLeftY
     {
@@ -256,6 +260,28 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     {
         get { return totalForce; }
         set { totalForce = value; }
+    }
+
+    public Vector3 RealTotalForceLeft
+    {
+        get { return realTotalForceLeft; }
+        set { realTotalForceLeft = value; }
+    }
+    public Vector3 RealTotalForceRight
+    {
+        get { return realTotalForceRight; }
+        set { realTotalForceRight = value; }
+    }
+
+    public Vector3 CenterGridLeftFootHeight
+    {
+        get { return centerGridLeftFootHeight; }
+        set { centerGridLeftFootHeight = value; }
+    }
+    public Vector3 CenterGridRightFootHeight
+    {
+        get { return centerGridRightFootHeight; }
+        set { centerGridRightFootHeight = value; }
     }
 
     #endregion
@@ -345,10 +371,10 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         // 1. Retrieve each frame public variables from DeformTerrainMaster.cs
 
         // A. Velocity of feet - Calculated in DeformTerrainMaster.cs
-        FeetSpeedLeftY = terrain.feetSpeedLeft.y; 
-        FeetSpeedRightY = terrain.feetSpeedRight.y;
-        FeetSpeedLeft = terrain.feetSpeedLeft;
-        FeetSpeedRight = terrain.feetSpeedRight;
+        //FeetSpeedLeftY = terrain.feetSpeedLeft.y; 
+        //FeetSpeedRightY = terrain.feetSpeedRight.y;
+        //FeetSpeedLeft = terrain.feetSpeedLeft;
+        //FeetSpeedRight = terrain.feetSpeedRight;
 
         // Gravity + Reaction Force - Calculated in DeformTerrainMaster.cs
         // B. Only need magnitude in this case - that is why we take the GRF (is fine!)
@@ -358,6 +384,12 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         TotalForce = terrain.totalGRForce;
         TotalForceLeft = terrain.totalGRForceLeft;
         TotalForceRight = terrain.totalGRForceRight;
+
+        // Retrieve real total force
+        RealTotalForceLeft = terrain.totalForceLeftFoot;
+        RealTotalForceRight = terrain.totalForceRightFoot;
+        CenterGridLeftFootHeight = terrain.centerGridLeftFootHeight;
+        CenterGridRightFootHeight = terrain.centerGridLeftFootHeight;
 
         // C. Keep track of min and max forces reached during the gait
         MinTotalForceLeftFootZNorm = terrain.minTotalForceLeftFootZNorm;

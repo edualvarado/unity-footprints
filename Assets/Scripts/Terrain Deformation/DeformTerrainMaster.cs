@@ -26,6 +26,10 @@ public class DeformTerrainMaster : MonoBehaviour
     public Collider leftFootCollider;
     [Tooltip("Collider attached to Right Foot")]
     public Collider rightFootCollider;
+    [Tooltip("RB attached to Left Foot")]
+    public Rigidbody leftFootRB;
+    [Tooltip("RB attached to Right Foot")]
+    public Rigidbody rightFootRB;
 
     [Header("Bipedal - System Info")]
     public float mass;
@@ -59,6 +63,7 @@ public class DeformTerrainMaster : MonoBehaviour
     public bool drawGRForces = false;
     public bool drawFeetForces = false;
     public bool drawVelocities = false;
+    public bool drawNewVelocities = false;
 
     [Header("Bipedal - Physics - Weight Forces Info")]
     public Vector3 weightForce;
@@ -68,6 +73,8 @@ public class DeformTerrainMaster : MonoBehaviour
     [Header("Bipedal - Physics - Feet Velocities Info")]
     public Vector3 feetSpeedLeft = Vector3.zero;
     public Vector3 feetSpeedRight = Vector3.zero;
+    public Vector3 newFeetSpeedLeft = Vector3.zero;
+    public Vector3 newFeetSpeedRight = Vector3.zero;
 
     [Header("Bipedal - Physics - Impulse and Momentum Forces Info")]
     public Vector3 feetImpulseLeft = Vector3.zero;
@@ -350,14 +357,29 @@ public class DeformTerrainMaster : MonoBehaviour
             //feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
             //feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
 
-            if (feetSpeedLeft.y <= 0f)
-                feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
+            // Old Velocity version //
+            //////////////////////////
+
+            //if (feetSpeedLeft.y <= 0f)
+            //    feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
+            //else
+            //    feetImpulseLeft = Vector3.zero;
+
+            //if (feetSpeedRight.y <= 0f)
+            //    feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
+            //else
+            //    feetImpulseRight = Vector3.zero;
+
+            // New Velocity version //
+            //////////////////////////
+
+            if (newFeetSpeedLeft.y <= 0f)
+                feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - newFeetSpeedLeft);
             else
                 feetImpulseLeft = Vector3.zero;
 
-
-            if (feetSpeedRight.y <= 0f)
-                feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
+            if (newFeetSpeedRight.y <= 0f)
+                feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - newFeetSpeedRight);
             else
                 feetImpulseRight = Vector3.zero;
 
@@ -560,6 +582,9 @@ public class DeformTerrainMaster : MonoBehaviour
             Debug.Log("[INFO] Left Foot Impulse: " + feetImpulseLeft);
             Debug.Log("[INFO] Right Foot Impulse: " + feetImpulseRight);
 
+            Debug.Log("[INFO] Left Foot Momentum: " + momentumForceLeft);
+            Debug.Log("[INFO] Right Foot Momentum: " + momentumForceRight);
+
             Debug.Log("[INFO] GRF Left Foot: " + totalGRForceLeft);
             Debug.Log("[INFO] GRF Right Foot: " + totalGRForceRight);
 
@@ -630,6 +655,20 @@ public class DeformTerrainMaster : MonoBehaviour
         if (drawVelocities)
         {
             DrawForce.ForDebug3D(newIKLeftPosition, -feetSpeedLeft, Color.cyan, 0.0025f);
+            DrawForce.ForDebug3D(newIKRightPosition, -feetSpeedRight, Color.cyan, 0.0025f);
+        }
+
+        // Calculate New Velocity for the feet //
+        // =============================== //
+
+        newFeetSpeedLeft = leftFootRB.velocity;
+        newFeetSpeedRight = rightFootRB.velocity;
+
+        if (drawNewVelocities)
+        {
+            DrawForce.ForDebug3DVelocity(oldIKLeftPosition, newFeetSpeedLeft, Color.cyan, 1f);
+            DrawForce.ForDebug3DVelocity(oldIKRightPosition, newFeetSpeedRight, Color.cyan, 1f);
+
         }
     }
 
