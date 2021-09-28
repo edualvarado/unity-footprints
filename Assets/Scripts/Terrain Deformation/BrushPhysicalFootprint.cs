@@ -26,6 +26,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     private float[,] heightmap_data_filtered;
 
     // Body Properties
+    private GameObject myBipedalCharacter;
     private float mass;
     private bool isLeftFootGrounded;
     private bool isRightFootGrounded;
@@ -284,6 +285,12 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         set { centerGridRightFootHeight = value; }
     }
 
+    public GameObject MyBipedalCharacter
+    {
+        get { return myBipedalCharacter; }
+        set { myBipedalCharacter = value; }
+    }
+
     #endregion
 
     #region Other Properties
@@ -369,6 +376,9 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     void Update()
     {
         // 1. Retrieve each frame public variables from DeformTerrainMaster.cs
+
+        // Retrieve Character
+        MyBipedalCharacter = terrain.myBipedalCharacter;
 
         // A. Velocity of feet - Calculated in DeformTerrainMaster.cs
         //FeetSpeedLeftY = terrain.feetSpeedLeft.y; 
