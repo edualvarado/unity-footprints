@@ -19,7 +19,7 @@ public class DeformTerrainMaster : MonoBehaviour
 {
     #region Variables
 
-    [Header("Bipedal - (CONFIG)")]
+    [Header("Bipedal - (SET UP)")]
     [Tooltip("Your character - make sure is the parent GameObject")]
     public GameObject myBipedalCharacter;
     [Tooltip("Collider attached to Left Foot")]
@@ -31,7 +31,33 @@ public class DeformTerrainMaster : MonoBehaviour
     [Tooltip("RB attached to Right Foot")]
     public Rigidbody rightFootRB;
 
+    [Header("Terrain Deformation - Contact Time Settings - (SET UP)")]
+    public float timePassed = 0f;
+    [Tooltip("Time that the terrain requires to absorve the force from the hitting foot. More time results in a smaller require force. On the other hand, for less time, the terrain requires a larger force to stop the foot.")]
+    public float contactTime = 0.1f;
+    [Tooltip("Small delay, sometimes needed, to give the system enough time to perform the deformation.")]
+    public float offset = 0.5f;
+
+    [Header("Terrain Prefabs - Settings - (SET UP)")]
+    public bool useTerrainPrefabs = false;
+    public double youngModulusSnow = 200000;
+    public float timeSnow = 0.2f;
+    public float poissonRatioSnow = 0.1f;
+    public bool bumpSnow = false;
+    public int filterIterationsSnow = 0;
+    public double youngModulusDrySand = 600000;
+    public float timeDrySand = 0.3f;
+    public float poissonRatioSand = 0.2f;
+    public bool bumpSand = false;
+    public int filterIterationsSand = 5;
+    public double youngModulusMud = 350000;
+    public float timeMud = 0.8f;
+    public float poissonRatioMud = 0.4f;
+    public bool bumpMud = false;
+    public int filterIterationsMud = 2;
+
     [Header("Bipedal - System Info")]
+    [Space(20)]
     public float mass;
     public Animator _anim;
     private IKFeetPlacement _feetPlacement = null;
@@ -71,10 +97,10 @@ public class DeformTerrainMaster : MonoBehaviour
     public Vector3 weightForceRight;
 
     [Header("Bipedal - Physics - Feet Velocities Info")]
-    public Vector3 feetSpeedLeft = Vector3.zero;
-    public Vector3 feetSpeedRight = Vector3.zero;
     public Vector3 newFeetSpeedLeft = Vector3.zero;
     public Vector3 newFeetSpeedRight = Vector3.zero;
+    private Vector3 feetSpeedLeft = Vector3.zero;
+    private Vector3 feetSpeedRight = Vector3.zero;
 
     [Header("Bipedal - Physics - Impulse and Momentum Forces Info")]
     public Vector3 feetImpulseLeft = Vector3.zero;
@@ -92,45 +118,18 @@ public class DeformTerrainMaster : MonoBehaviour
     public Vector3 totalForceRightFoot;
 
     [Header("Max and Min Feet Forces Info")]
-    public float minTotalForceLeftFootZ = 0f;
-    public float maxTotalForceLeftFootZ = 0f;
-    public float minTotalForceRightFootZ = 0f;
-    public float maxTotalForceRightFootZ = 0f;
-    public float minTotalForceLeftFootZNorm = 0f;
-    public float maxTotalForceLeftFootZNorm = 0f;
-    public float minTotalForceRightFootZNorm = 0f;
-    public float maxTotalForceRightFootZNorm = 0f; 
+    private float minTotalForceLeftFootZ = 0f;
+    private float maxTotalForceLeftFootZ = 0f;
+    private float minTotalForceRightFootZ = 0f;
+    private float maxTotalForceRightFootZ = 0f;
+    private float minTotalForceLeftFootZNorm = 0f;
+    private float maxTotalForceLeftFootZNorm = 0f;
+    private float minTotalForceRightFootZNorm = 0f;
+    private float maxTotalForceRightFootZNorm = 0f; 
     private float minTotalForceLeftFootZOld = 0f;
     private float maxTotalForceLeftFootZOld = 0f;
     private float minTotalForceRightFootZOld = 0f;
     private float maxTotalForceRightFootZOld = 0f;
-
-    [Header("Terrain Deformation - Contact Time Settings - (CONFIG)")]
-    [Space(20)]
-    public float timePassed = 0f;
-    [Tooltip("Time that the terrain requires to absorve the force from the hitting foot. More time results in a smaller require force. On the other hand, for less time, the terrain requires a larger force to stop the foot.")]
-    public float contactTime = 0.1f;
-    [Tooltip("Small delay, sometimes needed, to give the system enough time to perform the deformation.")]
-    public float offset = 0.5f;
-
-    [Header("Terrain Prefabs - Settings - (CONFIG)")]
-    [Space(20)]
-    public bool useTerrainPrefabs = false;
-    public double youngModulusSnow = 200000;
-    public float timeSnow = 0.2f;
-    public float poissonRatioSnow = 0.1f;
-    public bool bumpSnow = false;
-    public int filterIterationsSnow = 0;
-    public double youngModulusDrySand = 600000;
-    public float timeDrySand = 0.3f;
-    public float poissonRatioSand = 0.2f;
-    public bool bumpSand = false;
-    public int filterIterationsSand = 5;
-    public double youngModulusMud = 350000;
-    public float timeMud = 0.8f;
-    public float poissonRatioMud = 0.4f;
-    public bool bumpMud = false;
-    public int filterIterationsMud = 2;
 
     [Header("UI for DEMO mode")]
     [Space(20)]
@@ -218,7 +217,7 @@ public class DeformTerrainMaster : MonoBehaviour
         // 2. Get classes
         _feetPlacement = FindObjectOfType<IKFeetPlacement>();
 
-        // 2. Retrieve components and attributes from character
+        // 3. Retrieve components and attributes from character
         mass = myBipedalCharacter.GetComponent<Rigidbody>().mass;
         _anim = myBipedalCharacter.GetComponent<Animator>();
 
@@ -286,7 +285,7 @@ public class DeformTerrainMaster : MonoBehaviour
         centerGridRightFootHeight = new Vector3(_feetPlacement.RightFootIKPosition.x, Get(centerGridRightFoot.x, centerGridRightFoot.z), _feetPlacement.RightFootIKPosition.z);
 
         // 4. Calculate Proportion Feet Pivot //
-        // =============================== //
+        // ================================== //
 
         // 1. Bipedal -- _anim.pivotWeight only for bipedals
         // 2. Quadrupeds -- New method on the way based on barycentric coordinates
@@ -406,19 +405,7 @@ public class DeformTerrainMaster : MonoBehaviour
                 momentumForceYFloat = momentumForce.y;
             // ===================================================================== //
 
-
             // Momentum Forces are created when we hit the ground (that is, when such forces are positive in y, and the feet are grounded)
-            //if (drawMomentumForces && isMoving && momentumForceLeft.y > 0f && isLeftFootGrounded)
-            //{
-            //    DrawForce.ForDebug3D(centerGridLeftFootHeight, momentumForceLeft, Color.red, 0.0025f);
-            //}
-
-            //if (drawMomentumForces && isMoving && momentumForceRight.y > 0f && isRightFootGrounded)
-            //{
-            //    DrawForce.ForDebug3D(centerGridRightFootHeight, momentumForceRight, Color.red, 0.0025f);
-            //}
-
-            // Momentum Forces are created when we hit the ground
             if (drawMomentumForces && isMoving && isLeftFootGrounded)
             {
                 DrawForce.ForDebug3D(centerGridLeftFootHeight, momentumForceLeft, Color.red, 0.0025f);
@@ -533,6 +520,7 @@ public class DeformTerrainMaster : MonoBehaviour
             }
             else
             {
+                // Only when Momentum Force is upward
                 if (drawFeetForces && momentumForceLeft.y > 0f && isLeftFootGrounded)
                 {
                     DrawForce.ForDebug3D(centerGridLeftFootHeight, totalForceLeftFoot, Color.black, 0.0025f);
@@ -542,17 +530,6 @@ public class DeformTerrainMaster : MonoBehaviour
                 {
                     DrawForce.ForDebug3D(centerGridRightFootHeight, totalForceRightFoot, Color.black, 0.0025f);
                 }
-
-                //if (drawFeetForces && isLeftFootGrounded)
-                //{
-                //    DrawForce.ForDebug3D(centerGridLeftFootHeight, totalForceLeftFoot, Color.black, 0.0025f);
-                //}
-
-                //if (drawFeetForces && isRightFootGrounded)
-                //{
-                //    DrawForce.ForDebug3D(centerGridRightFootHeight, totalForceRightFoot, Color.black, 0.0025f);
-                //}
-
             }
         }
 
@@ -638,6 +615,7 @@ public class DeformTerrainMaster : MonoBehaviour
         // Calculate Velocity for the feet //
         // =============================== //
 
+        // Left to compare with the new velocity
         newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position; // Before: LeftFoot
         newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
         var mediaLeft = (newIKLeftPosition - oldIKLeftPosition);

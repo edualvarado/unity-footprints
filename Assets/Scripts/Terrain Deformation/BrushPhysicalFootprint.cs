@@ -37,10 +37,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     // Physics
     private float contactTime;
-    //private float feetSpeedLeftY;
-    //private float feetSpeedRightY;
-    //private Vector3 feetSpeedLeft;
-    //private Vector3 feetSpeedRight;
     private float totalForceY;
     private float totalForceLeftY;
     private float totalForceRightY;
@@ -83,7 +79,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return mass; }
         set { mass = value; }
     }
-
     public bool IsLeftFootGrounded
     {
         get { return isLeftFootGrounded; }
@@ -94,7 +89,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return isRightFootGrounded; }
         set { isRightFootGrounded = value; }
     }
-
     public Collider LeftFootCollider
     {
         get { return leftFootCollider; }
@@ -105,7 +99,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return rightFootCollider; }
         set { rightFootCollider = value; }
     }
-
     public float WeightInLeftFoot
     {
         get { return weightInLeftFoot; }
@@ -126,19 +119,16 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return activateBump; }
         set { activateBump = value; }
     }
-
     public float PoissonRatio
     {
         get { return poissonRatio; }
         set { poissonRatio = value; }
     }
-
     public double YoungM
     {
         get { return youngM; }
         set { youngM = value; }
     }
-
     public int FilterIte
     {
         get { return filterIte; }
@@ -159,13 +149,11 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return terrainSize; }
         set { terrainSize = value; }
     }
-
     public Vector3 HeightmapSize
     {
         get { return heightmapSize; }
         set { heightmapSize = value; }
     }
-
     public float[,] HeightMapFiltered
     {
         get { return heightmap_data_filtered; }
@@ -175,60 +163,32 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #endregion
 
-    #region Force Properties
-
+    #region Forces and Physics
     public float MinTotalForceLeftFootZNorm
     {
         get { return minTotalForceLeftFootZNorm; }
         set { minTotalForceLeftFootZNorm = value; }
     }
-
     public float MaxTotalForceLeftFootZNorm
     {
         get { return maxTotalForceLeftFootZNorm; }
         set { maxTotalForceLeftFootZNorm = value; }
     }
-
     public float MinTotalForceRightFootZNorm
     {
         get { return minTotalForceRightFootZNorm; }
         set { minTotalForceRightFootZNorm = value; }
     }
-
     public float MaxTotalForceRightFootZNorm
     {
         get { return maxTotalForceRightFootZNorm; }
         set { maxTotalForceRightFootZNorm = value; }
     }
-
     public float ContactTime
     {
         get { return contactTime; }
         set { contactTime = value; }
     }
-
-    //public float FeetSpeedLeftY
-    //{
-    //    get { return feetSpeedLeftY; }
-    //    set { feetSpeedLeftY = value; }
-    //}
-    //public float FeetSpeedRightY
-    //{
-    //    get { return feetSpeedRightY; }
-    //    set { feetSpeedRightY = value; }
-    //}
-
-    //public Vector3 FeetSpeedLeft
-    //{
-    //    get { return feetSpeedLeft; }
-    //    set { feetSpeedLeft = value; }
-    //}
-    //public Vector3 FeetSpeedRight
-    //{
-    //    get { return feetSpeedRight; }
-    //    set { feetSpeedRight = value; }
-    //}
-
     public float TotalForceLeftY
     {
         get { return totalForceLeftY; }
@@ -239,13 +199,11 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return totalForceRightY; }
         set { totalForceRightY = value; }
     }
-
     public float TotalForceY
     {
         get { return totalForceY; }
         set { totalForceY = value; }
     }
-
     public Vector3 TotalForceLeft
     {
         get { return totalForceLeft; }
@@ -256,13 +214,11 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return totalForceRight; }
         set { totalForceRight = value; }
     }
-
     public Vector3 TotalForce
     {
         get { return totalForce; }
         set { totalForce = value; }
     }
-
     public Vector3 RealTotalForceLeft
     {
         get { return realTotalForceLeft; }
@@ -273,6 +229,10 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return realTotalForceRight; }
         set { realTotalForceRight = value; }
     }
+
+    #endregion
+
+    #region Character
 
     public Vector3 CenterGridLeftFootHeight
     {
@@ -381,10 +341,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         MyBipedalCharacter = terrain.myBipedalCharacter;
 
         // A. Velocity of feet - Calculated in DeformTerrainMaster.cs
-        //FeetSpeedLeftY = terrain.feetSpeedLeft.y; 
-        //FeetSpeedRightY = terrain.feetSpeedRight.y;
-        //FeetSpeedLeft = terrain.feetSpeedLeft;
-        //FeetSpeedRight = terrain.feetSpeedRight;
+        // Not used
 
         // Gravity + Reaction Force - Calculated in DeformTerrainMaster.cs
         // B. Only need magnitude in this case - that is why we take the GRF (is fine!)
@@ -402,10 +359,10 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         CenterGridRightFootHeight = terrain.centerGridLeftFootHeight;
 
         // C. Keep track of min and max forces reached during the gait
-        MinTotalForceLeftFootZNorm = terrain.minTotalForceLeftFootZNorm;
-        MaxTotalForceLeftFootZNorm = terrain.maxTotalForceLeftFootZNorm;
-        MinTotalForceRightFootZNorm = terrain.minTotalForceRightFootZNorm;
-        MaxTotalForceRightFootZNorm = terrain.maxTotalForceRightFootZNorm;
+        //MinTotalForceLeftFootZNorm = terrain.minTotalForceLeftFootZNorm;
+        //MaxTotalForceLeftFootZNorm = terrain.maxTotalForceLeftFootZNorm;
+        //MinTotalForceRightFootZNorm = terrain.minTotalForceRightFootZNorm;
+        //MaxTotalForceRightFootZNorm = terrain.maxTotalForceRightFootZNorm;
 
         // D. Are the feet grounded?
         IsLeftFootGrounded = terrain.isLeftFootGrounded;

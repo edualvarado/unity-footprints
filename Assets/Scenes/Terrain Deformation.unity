@@ -5205,27 +5205,49 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   applyFootprints: 0
   applyBumps: 0
-  showGridDebugLeft: 0
-  showGridDebugRight: 0
-  showGridBumpDebug: 0
-  showGridBumpFrontBack: 0
-  printTerrainInformation: 0
-  printDeformationInformation: 0
+  youngModulus: 1000000
+  poissonR: 0.4
+  originalLength: 1
   gridSize: 10
   rayDistance: 0.1
   offsetRay: 0.04
-  youngModulus: 1000000
-  originalLength: 1
-  heightCellDisplacementYoungLeft: 0
-  heightCellDisplacementYoungRight: 0
-  displacementLeft: 0
-  displacementRight: 0
+  offsetBumpGrid: 2
+  neighboursSearchArea: 2
+  applyFilterLeft: 0
+  applyFilterRight: 0
+  filterIterationsLeftFoot: 2
+  filterIterationsRightFoot: 2
+  marginAroundGrid: 3
+  showGridDebugLeft: 0
+  showGridDebugRight: 0
+  showGridBumpDebug: 0
+  showGridBumpAidDebug: 0
+  printTerrainInformation: 0
   counterHitsLeft: 0
   counterHitsRight: 0
+  neighbourCellsLeft: 0
+  neighbourCellsRight: 0
+  newNeighbourCellsLeft: 0
+  newNeighbourCellsRight: 0
+  neighboursPositionsRight: []
+  neighboursPositionsLeft: []
   areaCell: 0
   areaTotal: 0
   areaTotalLeft: 0
   areaTotalRight: 0
+  neighbourAreaTotalLeft: 0
+  neighbourAreaTotalRight: 0
+  pressureStress: 0
+  pressureStressLeft: 0
+  pressureStressRight: 0
+  heightCellDisplacementYoungLeft: 0
+  heightCellDisplacementYoungRight: 0
+  displacementLeft: 0
+  displacementRight: 0
+  newBumpHeightDeformationLeft: 0
+  newBumpHeightDeformationRight: 0
+  bumpDisplacementLeft: 0
+  bumpDisplacementRight: 0
   volumeOriginalLeft: 0
   volumeOriginalRight: 0
   volumeTotalLeft: 0
@@ -5238,34 +5260,14 @@ MonoBehaviour:
   volumeNetDifferenceRight: 0
   volumeCellLeft: 0
   volumeCellRight: 0
-  pressureStress: 0
-  pressureStressLeft: 0
-  pressureStressRight: 0
-  useManualBumpDeformation: 0
-  bumpHeightDeformation: 0.029999999329447746
-  offsetBumpGrid: 2
-  neighboursSearchArea: 2
-  poissonR: 0.4
-  newBumpHeightDeformationLeft: 0
-  newBumpHeightDeformationRight: 0
-  bumpDisplacementLeft: 0
-  bumpDisplacementRight: 0
-  neighbourCellsLeft: 0
-  neighbourCellsRight: 0
-  neighbourAreaTotalLeft: 0
-  neighbourAreaTotalRight: 0
-  strainLong: 0
-  strainTrans: 0
-  neighboursPositionsRight: []
-  neighboursPositionsLeft: []
-  applyFilterLeft: 0
-  applyFilterRight: 0
-  filterIterationsLeftFoot: 2
-  filterIterationsRightFoot: 2
-  marginAroundGrid: 3
-  weightMult: 0.2
   weightCellLeft: 0
   weightCellRight: 0
+  weightCellLeftTotal: 0
+  weightCellRightTotal: 0
+  maxCornersLeftArray: []
+  maxCornersRightArray: []
+  maxCornersLeft: 0
+  maxCornersRight: 0
 --- !u!114 &1196036973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5283,6 +5285,25 @@ MonoBehaviour:
   rightFootCollider: {fileID: 539712482}
   leftFootRB: {fileID: 210305880}
   rightFootRB: {fileID: 350800511}
+  timePassed: 0
+  contactTime: 0.1
+  offset: 0.5
+  useTerrainPrefabs: 0
+  youngModulusSnow: 200000
+  timeSnow: 0.2
+  poissonRatioSnow: 0.1
+  bumpSnow: 0
+  filterIterationsSnow: 0
+  youngModulusDrySand: 600000
+  timeDrySand: 0.3
+  poissonRatioSand: 0.2
+  bumpSand: 0
+  filterIterationsSand: 5
+  youngModulusMud: 350000
+  timeMud: 0.8
+  poissonRatioMud: 0.4
+  bumpMud: 0
+  filterIterationsMud: 2
   mass: 0
   _anim: {fileID: 747185672}
   printFeetPositions: 0
@@ -5304,8 +5325,6 @@ MonoBehaviour:
   weightForce: {x: 0, y: 0, z: 0}
   weightForceLeft: {x: 0, y: 0, z: 0}
   weightForceRight: {x: 0, y: 0, z: 0}
-  feetSpeedLeft: {x: 0, y: 0, z: 0}
-  feetSpeedRight: {x: 0, y: 0, z: 0}
   newFeetSpeedLeft: {x: 0, y: 0, z: 0}
   newFeetSpeedRight: {x: 0, y: 0, z: 0}
   feetImpulseLeft: {x: 0, y: 0, z: 0}
@@ -5319,33 +5338,6 @@ MonoBehaviour:
   totalForceFoot: {x: 0, y: 0, z: 0}
   totalForceLeftFoot: {x: 0, y: 0, z: 0}
   totalForceRightFoot: {x: 0, y: 0, z: 0}
-  minTotalForceLeftFootZ: 0
-  maxTotalForceLeftFootZ: 0
-  minTotalForceRightFootZ: 0
-  maxTotalForceRightFootZ: 0
-  minTotalForceLeftFootZNorm: 0
-  maxTotalForceLeftFootZNorm: 0
-  minTotalForceRightFootZNorm: 0
-  maxTotalForceRightFootZNorm: 0
-  timePassed: 0
-  contactTime: 0.1
-  offset: 0.5
-  useTerrainPrefabs: 0
-  youngModulusSnow: 200000
-  timeSnow: 0.2
-  poissonRatioSnow: 0.1
-  bumpSnow: 0
-  filterIterationsSnow: 0
-  youngModulusDrySand: 600000
-  timeDrySand: 0.3
-  poissonRatioSand: 0.2
-  bumpSand: 0
-  filterIterationsSand: 5
-  youngModulusMud: 350000
-  timeMud: 0.8
-  poissonRatioMud: 0.4
-  bumpMud: 0
-  filterIterationsMud: 2
   useUI: 1
   youngSlider: {fileID: 143481753}
   timeSlider: {fileID: 1612287321}
@@ -8235,6 +8227,10 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2455106781847125998, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
       propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3916238067324420451, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
+      propertyPath: m_UseGravity
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5129985756030307204, guid: 0c2b68c06620a224f8d9f3605c74c9f6, type: 3}
