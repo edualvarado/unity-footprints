@@ -26,6 +26,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     [Header("Physically-based Footprints Deformation - (SET UP)")]
     public bool applyFootprints = false;
     public bool applyBumps = false;
+    public bool applyModulatedBumps = false;
 
     [Header("Terrain Deformation - (SET UP)")]
     [Range(100000, 1000000)] public double youngModulus = 1000000;
@@ -379,8 +380,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                                     Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
                                     Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
 
-                                    newNeighbourCellsRight++;
-
                                     // D. Mark that cell as a countour point
                                     heightMapRightBool[zi + gridSize, xi + gridSize] = 1;
                                     break;
@@ -448,7 +447,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                     Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
 
                     // Also store in general array
-                    neighboursPositionsLeft.Add(rayGridWorldRight);
+                    neighboursPositionsRight.Add(rayGridWorldRight);
 
                     // D. Counter neightbours
                     neighbourCellsRight++;
@@ -481,16 +480,16 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         forcePositionLeft = new Vector3(RealTotalForceLeft.x, RealTotalForceLeft.y, RealTotalForceLeft.z);
         forcePositionLeft2D = Vector3.ProjectOnPlane(forcePositionLeft.normalized, Vector3.up);
         forcePositionLeft2DWorld = LeftFootCollider.transform.position + forcePositionLeft2D; // TransformPoint is including the Quaternion multiplication
-        
-        if(showGridBumpAidDebug)
+
+        if (showGridBumpAidDebug)
             Debug.DrawRay(LeftFootCollider.transform.position, forcePositionLeft2D, Color.red); // See direction of force that modules the bump
 
         // Estimate projection of normalized force - Right Foot
         forcePositionRight = new Vector3(RealTotalForceRight.x, RealTotalForceRight.y, RealTotalForceRight.z);
         forcePositionRight2D = Vector3.ProjectOnPlane(forcePositionRight.normalized, Vector3.up);
         forcePositionRight2DWorld = RightFootCollider.transform.position + forcePositionRight2D; // TransformPoint is including the Quaternion multiplication
-        
-        if(showGridBumpAidDebug)
+
+        if (showGridBumpAidDebug)
             Debug.DrawRay(RightFootCollider.transform.position, forcePositionRight2D, Color.red); // See direction of force that modules the bump
 
         maxCornersLeftArray = new float[4];
@@ -504,196 +503,181 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         // ====================== //
 
         // 2. Calculating number of neightbouring hits to later get the area
-        for (int zi = -gridSize + offsetBumpGrid; zi <= gridSize - offsetBumpGrid; zi++)
+        // 2. Calculating max distance and not-normalized weight
+        if (applyModulatedBumps)
         {
-            for (int xi = -gridSize + offsetBumpGrid; xi <= gridSize - offsetBumpGrid; xi++)
+            for (int zi = -gridSize + offsetBumpGrid; zi <= gridSize - offsetBumpGrid; zi++)
             {
-                // === Modulated Bump === //
-
-                // Take maximum distance to corner
-                if ((zi == -gridSize + offsetBumpGrid) && (xi == -gridSize + offsetBumpGrid))
+                for (int xi = -gridSize + offsetBumpGrid; xi <= gridSize - offsetBumpGrid; xi++)
                 {
-                    // For Left Foot
-                    Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
-                    Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
-
-                    Vector3 relativePosMaxLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
-
-                    maxDLeft = relativePosMaxLeft.sqrMagnitude;
-                    maxCornersLeftArray[0] = maxDLeft;
-                    maxCornersLeft = maxCornersLeftArray.Max();
-
-                    if (showGridBumpAidDebug)
-                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.1f, Color.grey);
-
-                    if (showGridBumpAidDebug)
-                        Debug.DrawRay(forcePositionLeft2DWorld, relativePosMaxLeft, Color.blue);
-
-                    // For Right Foot
-                    Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
-                    Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
-
-                    Vector3 relativePosMaxRight = rayGridWorldRight - forcePositionRight2DWorld;
-
-                    maxDRight = relativePosMaxRight.sqrMagnitude;
-                    maxCornersRightArray[0] = maxDRight;
-                    maxCornersRight = maxCornersRightArray.Max();
-                }
-                
-                if ((zi == gridSize - offsetBumpGrid) && (xi == -gridSize + offsetBumpGrid))
-                {
-                    // For Left Foot
-                    Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
-                    Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
-
-                    Vector3 relativePosMaxLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
-
-                    maxDLeft = relativePosMaxLeft.sqrMagnitude;
-                    maxCornersLeftArray[1] = maxDLeft;
-                    maxCornersLeft = maxCornersLeftArray.Max();
-
-                    if (showGridBumpAidDebug)
-                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.1f, Color.grey);
-
-                    if (showGridBumpAidDebug)
-                        Debug.DrawRay(forcePositionLeft2DWorld, relativePosMaxLeft, Color.blue);
-
-                    // For Right Foot
-                    Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
-                    Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
-
-                    Vector3 relativePosMaxRight = rayGridWorldRight - forcePositionRight2DWorld;
-
-                    maxDRight = relativePosMaxRight.sqrMagnitude;
-                    maxCornersRightArray[1] = maxDRight;
-                    maxCornersRight = maxCornersRightArray.Max();
-                }
-
-                if ((zi == -gridSize + offsetBumpGrid) && (xi == gridSize - offsetBumpGrid))
-                {
-                    // For Left Foot
-                    Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
-                    Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
-
-                    Vector3 relativePosMaxLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
-
-                    maxDLeft = relativePosMaxLeft.sqrMagnitude;
-                    maxCornersLeftArray[2] = maxDLeft;
-                    maxCornersLeft = maxCornersLeftArray.Max();
-
-                    if (showGridBumpAidDebug)
-                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.1f, Color.grey);
-
-                    if (showGridBumpAidDebug)
-                        Debug.DrawRay(forcePositionLeft2DWorld, relativePosMaxLeft, Color.blue);
-
-                    // For Right Foot
-                    Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
-                    Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
-
-                    Vector3 relativePosMaxRight = rayGridWorldRight - forcePositionRight2DWorld;
-
-                    maxDRight = relativePosMaxRight.sqrMagnitude;
-                    maxCornersRightArray[2] = maxDRight;
-                    maxCornersRight = maxCornersRightArray.Max();
-                }
-
-                if ((zi == gridSize - offsetBumpGrid) && (xi == gridSize - offsetBumpGrid))
-                {
-                    // For Left Foot
-                    Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
-                    Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
-
-                    Vector3 relativePosMaxLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
-
-                    maxDLeft = relativePosMaxLeft.sqrMagnitude;
-                    maxCornersLeftArray[3] = maxDLeft;
-                    maxCornersLeft = maxCornersLeftArray.Max();
-
-                    if (showGridBumpAidDebug)
-                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.1f, Color.grey);
-
-                    if (showGridBumpAidDebug)
-                        Debug.DrawRay(forcePositionLeft2DWorld, relativePosMaxLeft, Color.blue);
-
-                    // For Right Foot
-                    Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
-                    Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
-
-                    Vector3 relativePosMaxRight = rayGridWorldRight - forcePositionRight2DWorld;
-                    maxDRight = relativePosMaxRight.sqrMagnitude;
-                    maxCornersRightArray[3] = maxDRight;
-                    maxCornersRight = maxCornersRightArray.Max();
-                }
-
-                // ====================== //
-
-                // A. If cell is neightbour
-                if (heightMapLeftBool[zi + gridSize, xi + gridSize] == 1)
-                {
-                    // B. Each neightbour cell in world space
-                    Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
-                    Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
-
                     // === Modulated Bump === //
 
-                    Vector3 relativePosCellLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
-                    dLeft = relativePosCellLeft.sqrMagnitude;
+                    // Take maximum distance to corner
+                    if ((zi == -gridSize + offsetBumpGrid) && (xi == -gridSize + offsetBumpGrid))
+                    {
+                        // For Left Foot
+                        Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
+                        Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
 
-                    // Create weight, sum up total and store
-                    //weightCellLeft = ((1 - (dLeft - 1)) / (1 - maxCornersLeft));
-                    //weightCellLeft = 1 - ((dLeft - 1) / (1 - maxCornersLeft));
-                    weightCellLeft = 1 - (dLeft / maxCornersLeft);
+                        Vector3 relativePosMaxLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
 
-                    weightsBumpLeft[zi + gridSize, xi + gridSize] = weightCellLeft;
+                        maxDLeft = relativePosMaxLeft.sqrMagnitude;
+                        maxCornersLeftArray[0] = maxDLeft;
+                        maxCornersLeft = maxCornersLeftArray.Max();
 
-                    weightCellLeftTotal += weightCellLeft;
+                        if (showGridBumpAidDebug)
+                            Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.1f, Color.grey);
+
+                        if (showGridBumpAidDebug)
+                            Debug.DrawRay(forcePositionLeft2DWorld, relativePosMaxLeft, Color.blue);
+
+                        // For Right Foot
+                        Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
+                        Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
+
+                        Vector3 relativePosMaxRight = rayGridWorldRight - forcePositionRight2DWorld;
+
+                        maxDRight = relativePosMaxRight.sqrMagnitude;
+                        maxCornersRightArray[0] = maxDRight;
+                        maxCornersRight = maxCornersRightArray.Max();
+                    }
+
+                    if ((zi == gridSize - offsetBumpGrid) && (xi == -gridSize + offsetBumpGrid))
+                    {
+                        // For Left Foot
+                        Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
+                        Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
+
+                        Vector3 relativePosMaxLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
+
+                        maxDLeft = relativePosMaxLeft.sqrMagnitude;
+                        maxCornersLeftArray[1] = maxDLeft;
+                        maxCornersLeft = maxCornersLeftArray.Max();
+
+                        if (showGridBumpAidDebug)
+                            Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.1f, Color.grey);
+
+                        if (showGridBumpAidDebug)
+                            Debug.DrawRay(forcePositionLeft2DWorld, relativePosMaxLeft, Color.blue);
+
+                        // For Right Foot
+                        Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
+                        Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
+
+                        Vector3 relativePosMaxRight = rayGridWorldRight - forcePositionRight2DWorld;
+
+                        maxDRight = relativePosMaxRight.sqrMagnitude;
+                        maxCornersRightArray[1] = maxDRight;
+                        maxCornersRight = maxCornersRightArray.Max();
+                    }
+
+                    if ((zi == -gridSize + offsetBumpGrid) && (xi == gridSize - offsetBumpGrid))
+                    {
+                        // For Left Foot
+                        Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
+                        Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
+
+                        Vector3 relativePosMaxLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
+
+                        maxDLeft = relativePosMaxLeft.sqrMagnitude;
+                        maxCornersLeftArray[2] = maxDLeft;
+                        maxCornersLeft = maxCornersLeftArray.Max();
+
+                        if (showGridBumpAidDebug)
+                            Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.1f, Color.grey);
+
+                        if (showGridBumpAidDebug)
+                            Debug.DrawRay(forcePositionLeft2DWorld, relativePosMaxLeft, Color.blue);
+
+                        // For Right Foot
+                        Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
+                        Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
+
+                        Vector3 relativePosMaxRight = rayGridWorldRight - forcePositionRight2DWorld;
+
+                        maxDRight = relativePosMaxRight.sqrMagnitude;
+                        maxCornersRightArray[2] = maxDRight;
+                        maxCornersRight = maxCornersRightArray.Max();
+                    }
+
+                    if ((zi == gridSize - offsetBumpGrid) && (xi == gridSize - offsetBumpGrid))
+                    {
+                        // For Left Foot
+                        Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
+                        Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
+
+                        Vector3 relativePosMaxLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
+
+                        maxDLeft = relativePosMaxLeft.sqrMagnitude;
+                        maxCornersLeftArray[3] = maxDLeft;
+                        maxCornersLeft = maxCornersLeftArray.Max();
+
+                        if (showGridBumpAidDebug)
+                            Debug.DrawRay(rayGridWorldLeft, Vector3.up * 0.1f, Color.grey);
+
+                        if (showGridBumpAidDebug)
+                            Debug.DrawRay(forcePositionLeft2DWorld, relativePosMaxLeft, Color.blue);
+
+                        // For Right Foot
+                        Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
+                        Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
+
+                        Vector3 relativePosMaxRight = rayGridWorldRight - forcePositionRight2DWorld;
+                        maxDRight = relativePosMaxRight.sqrMagnitude;
+                        maxCornersRightArray[3] = maxDRight;
+                        maxCornersRight = maxCornersRightArray.Max();
+                    }
 
                     // ====================== //
 
-                    // Moved before
+                    // A. If cell is neightbour
+                    if (heightMapLeftBool[zi + gridSize, xi + gridSize] == 1)
+                    {
+                        // B. Each neightbour cell in world space
+                        Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
+                        Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
 
-                    // Also store in general array
-                    //neighboursPositionsLeft.Add(rayGridWorldLeft);
+                        // === Modulated Bump === //
 
-                    // D. Counter neightbours
-                    //neighbourCellsLeft++;
+                        Vector3 relativePosCellLeft = rayGridWorldLeft - forcePositionLeft2DWorld;
+                        dLeft = relativePosCellLeft.sqrMagnitude;
+
+                        // Create weight, sum up total and store
+                        //weightCellLeft = ((1 - (dLeft - 1)) / (1 - maxCornersLeft));
+                        //weightCellLeft = 1 - ((dLeft - 1) / (1 - maxCornersLeft));
+                        weightCellLeft = 1 - (dLeft / maxCornersLeft);
+
+                        weightsBumpLeft[zi + gridSize, xi + gridSize] = weightCellLeft;
+
+                        weightCellLeftTotal += weightCellLeft;
+                    }
+
+                    // A. If cell is neightbour
+                    if (heightMapRightBool[zi + gridSize, xi + gridSize] == 1)
+                    {
+                        // B. Each neightbour cell in world space
+                        Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
+                        Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
+
+                        // === Modulated Bump === //
+
+                        Vector3 relativePosCellRight = rayGridWorldRight - forcePositionRight2DWorld;
+                        dRight = relativePosCellRight.sqrMagnitude;
+
+                        // Create weight, sum up total and store
+                        //weightCellRight = ((1 - (dRight - 1)) / (1 - maxCornersRight));
+                        //weightCellRight = 1 - ((dRight - 1) / (1 - maxCornersRight));
+                        weightCellRight = 1 - (dRight / maxCornersRight);
+
+                        weightsBumpRight[zi + gridSize, xi + gridSize] = weightCellRight;
+
+                        weightCellRightTotal += weightCellRight;
+                    }
                 }
-
-                // A. If cell is neightbour
-                if (heightMapRightBool[zi + gridSize, xi + gridSize] == 1)
-                {
-                    // B. Each neightbour cell in world space
-                    Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
-                    Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
-
-                    // === Modulated Bump === //
-
-                    Vector3 relativePosCellRight = rayGridWorldRight - forcePositionRight2DWorld;
-                    dRight = relativePosCellRight.sqrMagnitude;
-
-                    // Create weight, sum up total and store
-                    //weightCellRight = ((1 - (dRight - 1)) / (1 - maxCornersRight));
-                    //weightCellRight = 1 - ((dRight - 1) / (1 - maxCornersRight));
-                    weightCellRight = 1 - (dRight / maxCornersRight);
-
-                    weightsBumpRight[zi + gridSize, xi + gridSize] = weightCellRight;
-
-                    weightCellRightTotal += weightCellRight;
-
-                    // ====================== //
-
-                    // Moved before
-
-                    // Also store in general array
-                    //neighboursPositionsRight.Add(rayGridWorldRight);
-
-                    // D. Counter neightbours
-                    //neighbourCellsRight++;
-                }
-            }
+            } 
         }
 
+        // Calculate weight per cell
         for (int zi = -gridSize + offsetBumpGrid; zi <= gridSize - offsetBumpGrid; zi++)
         {
             for (int xi = -gridSize + offsetBumpGrid; xi <= gridSize - offsetBumpGrid; xi++)
@@ -708,7 +692,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
                     if (showGridBumpDebug)
                     {
-                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * weightsBumpLeft[zi + gridSize, xi + gridSize], Color.yellow);
+                        if(applyModulatedBumps)
+                            Debug.DrawRay(rayGridWorldLeft, Vector3.up * weightsBumpLeft[zi + gridSize, xi + gridSize], Color.yellow);
+                        else
+                            Debug.DrawRay(rayGridWorldLeft, Vector3.up * weightsBumpLeftInit[zi + gridSize, xi + gridSize], Color.yellow);
                     }
                 }
 
@@ -722,7 +709,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
                     if (showGridBumpDebug)
                     {
-                        Debug.DrawRay(rayGridWorldRight, Vector3.up * weightsBumpRightInit[zi + gridSize, xi + gridSize], Color.red);
+                        // CAUTION: TO COMPARE ONLY -> TODO CHANGE INIT
+                        if(applyModulatedBumps)
+                            Debug.DrawRay(rayGridWorldRight, Vector3.up * weightsBumpRightInit[zi + gridSize, xi + gridSize], Color.red);
+                        else
+                            Debug.DrawRay(rayGridWorldRight, Vector3.up * weightsBumpRightInit[zi + gridSize, xi + gridSize], Color.red);
                     }
                 }
             }
@@ -888,8 +879,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             // Calculate the difference in volume, takes into account the compressibility and estimate volume up per neighbour cell
             volumeDifferenceLeft =  volumeTotalLeft - volumeOriginalLeft; // NEGATIVE CHANGE
             volumeNetDifferenceLeft = -volumeDifferenceLeft + volumeVariationPoissonLeft; // Calculate directly the volume in the bump upwards (positive)
-            
-            // Distribute volume
             volumeCellLeft = volumeNetDifferenceLeft / neighbourCellsLeft;
 
             // 1. Calculate positive deformation for the contour based on the downward deformation and Poisson
@@ -948,7 +937,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         // Once we have the displacement, we saved the actual result of applying it to the terrain (only when the foot is grounded)
         if (IsLeftFootGrounded)
         {
-            StartCoroutine(DecreaseTerrainLeft(heightMapLeft, heightMapLeftBool, weightsBumpLeft, xLeft, zLeft));
+            StartCoroutine(DecreaseTerrainLeft(heightMapLeft, heightMapLeftBool, weightsBumpLeftInit, weightsBumpLeft, xLeft, zLeft));
         }
         else if(!IsLeftFootGrounded)
         {
@@ -959,7 +948,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
         if (IsRightFootGrounded)
         {
-            StartCoroutine(DecreaseTerrainRight(heightMapRight, heightMapRightBool, xRight, zRight));
+            StartCoroutine(DecreaseTerrainRight(heightMapRight, heightMapRightBool, weightsBumpRightInit, weightsBumpRight, xRight, zRight));
         }
         else if(!IsRightFootGrounded)
         {
@@ -1019,7 +1008,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         }
     }
 
-    IEnumerator DecreaseTerrainLeft(float[,] heightMapLeft, int[,] heightMapLeftBool, float[,] weightsBumpLeft, int xLeft, int zLeft)
+    IEnumerator DecreaseTerrainLeft(float[,] heightMapLeft, int[,] heightMapLeftBool, float[,] weightsBumpLeftInit, float[,] weightsBumpLeft, int xLeft, int zLeft)
     {
         // 1. Apply frame-per-frame deformation ("displacement")
         for (int zi = -gridSize; zi <= gridSize; zi++)
@@ -1051,15 +1040,27 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 }
                 else if (!LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 1) && applyBumps)
                 {
-                    if (terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + newBumpHeightDeformationLeft * (weightsBumpLeft[zi + gridSize, xi + gridSize] * neighbourCellsLeft))
+                    if(applyModulatedBumps)
                     {
-                        // IMPORTANT - FOR TESTING THE MODULATION
-                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (bumpDisplacementLeft);
-                        //heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (bumpDisplacementLeft * weightsBumpLeft[zi + gridSize, xi + gridSize]);
+                        if(terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + newBumpHeightDeformationLeft * (weightsBumpLeft[zi + gridSize, xi + gridSize] * neighbourCellsLeft))
+                        {
+                            heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (bumpDisplacementLeft);
+                        }
+                        else
+                        {
+                            heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z);
+                        }
                     }
                     else
                     {
-                        heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z);
+                        if(terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + newBumpHeightDeformationLeft * (weightsBumpLeftInit[zi + gridSize, xi + gridSize] * neighbourCellsLeft))
+                        {
+                            heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (bumpDisplacementLeft);
+                        }
+                        else
+                        {
+                            heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z);
+                        }
                     }
                 }
                 else
@@ -1086,48 +1087,64 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         yield return null;
     }
 
-    IEnumerator DecreaseTerrainRight(float[,] heightMapRight, int[,] heightMapRightBool, int xRight, int zRight)
+    IEnumerator DecreaseTerrainRight(float[,] heightMapRight, int[,] heightMapRightBool, float[,] weightsBumpRightInit, float[,] weightsBumpRight, int xRight, int zRight)
     {
         // 1. Apply frame-per-frame deformation ("displacement")
         for (int zi = -gridSize; zi <= gridSize; zi++)
         {
             for (int xi = -gridSize; xi <= gridSize; xi++)
             {
-                // Calculate each cell position wrt World and Heightmap - Right Foot
+                // A. Calculate each cell position wrt World and Heightmap - Right Foot
                 Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi), zRight + zi);
                 Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
 
-                // Create each ray for the grid (wrt World) - Right
+                // B. Create each ray for the grid (wrt World) - Right
                 RaycastHit rightFootHit;
                 Ray upRayRightFoot = new Ray(rayGridWorldRight, Vector3.up);
 
-                // If hits the Right Foot and the cell was classified with 2 (direct contact) or 1 (countour):
+                // C. If hits the Right Foot and the cell was classified with 2 (direct contact) or 1 (countour):
                 if (RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 2))
                 {
-                    // Cell contacting directly - Decrease until limit reached
+                    // D. Cell contacting directly - Decrease until limit reached
                     if (terrain.Get(rayGridRight.x, rayGridRight.z) >= terrain.GetConstant(rayGridRight.x, rayGridRight.z) - heightCellDisplacementYoungRight)
                     {
+                        // E. Substract
                         heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) - (displacementRight);
                     }
                     else
                     {
+                        // F. Keep same
                         heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z);
                     }
                 } 
                 else if (!RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 1) && applyBumps)
                 {
-                    if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + newBumpHeightDeformationRight)
+                    if(applyModulatedBumps)
                     {
-                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) + (bumpDisplacementRight);
+                        if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + newBumpHeightDeformationRight * (weightsBumpRightInit[zi + gridSize, xi + gridSize] * neighbourCellsRight))
+                        {
+                            heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) + (bumpDisplacementRight);
+                        }
+                        else
+                        {
+                            heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z);
+                        }
                     }
                     else
                     {
-                        heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z);
+                        if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + newBumpHeightDeformationRight * (weightsBumpRightInit[zi + gridSize, xi + gridSize] * neighbourCellsRight))
+                        {
+                            heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) + (bumpDisplacementRight);
+                        }
+                        else
+                        {
+                            heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z);
+                        }
                     }
                 }
                 else
                 {
-                    // If is out of reach
+                    // J. If is out of reach
                     heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z);
                 }
             }

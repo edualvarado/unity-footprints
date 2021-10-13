@@ -83,10 +83,10 @@ public static class DrawForce
     }
     public static void ForDebug3D(Vector3 pos, Vector3 direction, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
     {
-        //float reduce = 0.5f;
-        float reduce = 1f;
+        float reduce = 0.5f;
+        //float reduce = 1f;
 
-        //pos = pos + new Vector3(0.5f, 0, 0);
+        pos = pos + new Vector3(0.5f, 0, 0);
 
         if (direction != Vector3.zero)
         {
