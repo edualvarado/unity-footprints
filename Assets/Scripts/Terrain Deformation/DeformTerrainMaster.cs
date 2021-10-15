@@ -169,25 +169,25 @@ public class DeformTerrainMaster : MonoBehaviour
 
     //               Extra for plotting              //
     // ============================================= //
-    //[UPyPlot.UPyPlotController.UPyProbe]
+    [UPyPlot.UPyPlotController.UPyProbe]
     private float weightForceLeftYFloat = 0f;
-    //[UPyPlot.UPyPlotController.UPyProbe]
+    [UPyPlot.UPyPlotController.UPyProbe]
     private float weightForceRightYFloat = 0f;
-    //[UPyPlot.UPyPlotController.UPyProbe]
+    [UPyPlot.UPyPlotController.UPyProbe]
     private float weightForceYFloat = 0f;
 
-    //[UPyPlot.UPyPlotController.UPyProbe]
+    [UPyPlot.UPyPlotController.UPyProbe]
     private float momentumForceLeftYFloat = 0f;
-    //[UPyPlot.UPyPlotController.UPyProbe]
+    [UPyPlot.UPyPlotController.UPyProbe]
     private float momentumForceRightYFloat = 0f;
-    //[UPyPlot.UPyPlotController.UPyProbe]
+    [UPyPlot.UPyPlotController.UPyProbe]
     private float momentumForceYFloat = 0f;
 
-    //[UPyPlot.UPyPlotController.UPyProbe]
+    [UPyPlot.UPyPlotController.UPyProbe]
     private float totalGRForceLeftYFloat;
-    //[UPyPlot.UPyPlotController.UPyProbe]
+    [UPyPlot.UPyPlotController.UPyProbe]
     private float totalGRForceRightYFloat;
-    //[UPyPlot.UPyPlotController.UPyProbe]
+    [UPyPlot.UPyPlotController.UPyProbe]
     private float totalGRForceYFloat;
     // ============================================= //
 
