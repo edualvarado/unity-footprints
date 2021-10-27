@@ -1,17 +1,14 @@
 ﻿/****************************************************
- * File: PhysicalFootprint.cs
+ * File: BrushPhysicalFootprint.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
-   * Date: Created by LIX on 01/08/2021
-   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+   * Date: Created by LIX on 27/10/2021
+   * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
 *****************************************************/
 
-using System;
 using System.Collections;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 
 /// <summary>
@@ -26,32 +23,40 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     [Header("Physically-based Footprints Deformation - (SET UP)")]
     public bool applyFootprints = false;
     public bool applyBumps = false;
-    public bool applyModulatedBumps = false;
+    [HideInInspector] public bool applyModulatedBumps = false;
 
-    [Header("Terrain Deformation - (SET UP)")]
-    [Range(100000, 1000000)] public double youngModulus = 1000000;
+    [Header("Terrain Compression - (SET UP)")]
+    [Space(20)]
+    [Range(100000, 10000000)] public double youngModulus = 1000000;
+    public float originalLengthZero = 0.3f;
+
+    [Header("Vertical Displacement - (SET UP)")]
+    [Space(20)]
     [Range(0, 0.5f)] public float poissonR = 0.4f;
-    public float originalLength = 1f;
 
-    [Header("Grids - (SET UP)")]
+    [Header("Compression Grid - (SET UP)")]
+    [Space(20)]
     [Range(0, 20)] public int gridSize = 10;
-    [Range(0f, 1f)] public float rayDistance = 0.1f;
+    [Range(0f, 1f)] public float raycastDistance = 0.075f;
     [Range(0f, 1f)] public float offsetRay = 0.04f;
 
-    [Header("Bump Deformation - (SET UP)")]
+    [Header("Vertical Displcamenet Grid - (SET UP)")]
+    [Space(20)]
     public int offsetBumpGrid = 2;
     public int neighboursSearchArea = 2;
 
     [Header("Gaussian Filtering - (SET UP)")]
+    [Space(20)]
     public bool applyFilterLeft = false;
     public bool applyFilterRight = false;
     public int filterIterationsLeftFoot = 2;
     public int filterIterationsRightFoot = 2;
+    [Space(10)]
     public int marginAroundGrid = 3;
     private int filterIterationsLeftCounter = 0;
     private int filterIterationsRightCounter = 0;
-    private bool isFilteredLeft = false;
-    private bool isFilteredRight = false;
+    public bool isFilteredLeft = false;
+    public bool isFilteredRight = false;
     [Range(0, 5)] private int gridSizeKernel = 1;
 
     [Header("Grids - Debug")]
@@ -63,26 +68,29 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public bool printTerrainInformation = false;
 
     [Header("Grids - Number of hits")]
+    [Space(20)]
     public int counterHitsLeft;
     public int counterHitsRight;
     public int neighbourCellsLeft;
     public int neighbourCellsRight;
-    public int newNeighbourCellsLeft;
-    public int newNeighbourCellsRight;
     public List<Vector3> neighboursPositionsRight = new List<Vector3>();
     public List<Vector3> neighboursPositionsLeft = new List<Vector3>();
 
     [Header("Grids - Contact Area Feet-Ground")]
+    [Space(20)]
+    public float lenghtCellX;
+    public float lenghtCellZ;
     public float areaCell;
+    [Space(10)]
     public float areaTotal = 0f;
     public float areaTotalLeft = 0f;
     public float areaTotalRight = 0f;
+    [Space(10)]
     public float neighbourAreaTotalLeft;
     public float neighbourAreaTotalRight;
     private float oldAreaTotalLeft = 0f;
     private float oldAreaTotalRight = 0f;
-    private float lenghtCellX;
-    private float lenghtCellZ;
+
 
     [Header("Terrain Deformation - Pressure")]
     [Space(20)]
@@ -90,23 +98,27 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public float pressureStressLeft;
     public float pressureStressRight;
 
-    [Header("Terrain Deformation - Displacement")]
+    [Header("Terrain Compression - Displacement")]
+    [Space(20)]
     public double heightCellDisplacementYoungLeft = 0f;
     public double heightCellDisplacementYoungRight = 0f;
+    [Space(10)]
     public float displacementLeft;
     public float displacementRight;
     private double oldHeightCellDisplacementYoungLeft = 0f;
     private double oldHeightCellDisplacementYoungRight = 0f;
 
-    [Header("Bump Deformation - Displacement")]
-    public double newBumpHeightDeformationLeft = 0f;
-    public double newBumpHeightDeformationRight = 0f;
+    [Header("Vertical Displacement - Displacement")]
+    public double bumpHeightDeformationLeft = 0f;
+    public double bumpHeightDeformationRight = 0f;
+    [Space(10)]
     public float bumpDisplacementLeft;
     public float bumpDisplacementRight;
     private float oldNeighbourAreaTotalLeft;
     private float oldNeighbourAreaTotalRight;
 
     [Header("Terrain Deformation - Volume Rod Approximation")]
+    [Space(20)]
     public double volumeOriginalLeft = 0f; // Original volume under left foot
     public double volumeOriginalRight = 0f; // Original volume under right foot
     public double volumeTotalLeft = 0f; // Volume left after deformation
@@ -123,26 +135,22 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     // NEW Modulated Bump
     [Header("New - Modulated Bump")]
     [Space(20)]
-    public float weightCellLeft; // Weights created between 0 and 1
-    public float weightCellRight;
-    public float weightCellLeftTotal; // Summing up all cell values
-    public float weightCellRightTotal;
-    public float[,] weightsBumpLeftInit; // Initial cell values that sum up to 1
-    public float[,] weightsBumpRightInit;
-    public float[,] weightsBumpLeft; // Final cell values that sum up to 1
-    public float[,] weightsBumpRight;
-
-    public float[] maxCornersLeftArray; // Array with distance to four vertices
-    public float[] maxCornersRightArray;
-    public float maxCornersLeft; // Maximum distance over the four vertices
-    public float maxCornersRight;
-
+    [HideInInspector] public float weightCellLeft; // Weights created between 0 and 1
+    [HideInInspector] public float weightCellRight;
+    [HideInInspector] public float weightCellLeftTotal; // Summing up all cell values
+    [HideInInspector] public float weightCellRightTotal;
+    [HideInInspector] public float[,] weightsBumpLeftInit; // Initial cell values that sum up to 1
+    [HideInInspector] public float[,] weightsBumpRightInit;
+    [HideInInspector] public float[,] weightsBumpLeft; // Final cell values that sum up to 1
+    [HideInInspector] public float[,] weightsBumpRight;
+    [HideInInspector] public float[] maxCornersLeftArray; // Array with distance to four vertices
+    [HideInInspector] public float[] maxCornersRightArray;
+    [HideInInspector] public float maxCornersLeft; // Maximum distance over the four vertices
+    [HideInInspector] public float maxCornersRight;
     private float maxDLeft; // Distance value to one vertex
     private float maxDRight;
-
     private float dLeft; // Distance to a cell
     private float dRight;
-
     private float weightMult = 0.2f;
 
     // Force for bump
@@ -179,7 +187,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         // =============================== //
 
         // 1. If activated, takes the prefab information from the master script
-        if (UseTerrainPrefabs)
+        if (DeformationChoice == sourceDeformation.useTerrainPrefabs)
         {
             youngModulus = YoungM;
             poissonR = PoissonRatio;
@@ -200,7 +208,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         }
 
         // 2. If activated, takes the UI information from the interface
-        if (UseUI)
+        if (DeformationChoice == sourceDeformation.useUI)
         {
             applyFootprints = ActivateToggleDef.isOn;
             applyBumps = ActivateToggleBump.isOn;
@@ -217,15 +225,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             filterIterationsRightFoot = (int)IterationsSlider.value;
         }
 
-        // 3. Reset counter hits
+        // 3. Reset counter hits and lists
         counterHitsLeft = 0;
         counterHitsRight = 0;
         neighbourCellsLeft = 0;
         neighbourCellsRight = 0;
-        newNeighbourCellsLeft = 0;
-        newNeighbourCellsRight = 0;
-
-        // 3. Reset lists
         neighboursPositionsRight.Clear();
         neighboursPositionsLeft.Clear();
 
@@ -255,7 +259,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             Debug.Log("[INFO] Area of one cell: " + (terrain.TerrainSize().x / (terrain.GridSize().x - 1)) * (terrain.TerrainSize().z / (terrain.GridSize().z - 1)));
         }
 
-        // 4. Calculate area per cell outside the loop
+        // 5. Calculate area per cell outside the loop
         lenghtCellX = terrain.TerrainSize().x / (terrain.GridSize().x - 1);
         lenghtCellZ = terrain.TerrainSize().z / (terrain.GridSize().z - 1);
         areaCell = lenghtCellX * lenghtCellZ;
@@ -292,14 +296,14 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 //------//
 
                 // C. If hits the Left Foot, increase counter and add cell to be affected
-                if (LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance))
+                if (LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, raycastDistance))
                 {
                     // Cell contacting directly
                     heightMapLeftBool[zi + gridSize, xi + gridSize] = 2;
                     counterHitsLeft++;
 
                     if (showGridDebugLeft)
-                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * rayDistance, Color.blue);
+                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * raycastDistance, Color.blue);
                 }
                 else
                 {
@@ -307,18 +311,18 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                     heightMapLeftBool[zi + gridSize, xi + gridSize] = 0;
 
                     if (showGridDebugLeft)
-                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * rayDistance, Color.red);
+                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * raycastDistance, Color.red);
                 }
                 
                 // C. If hits the Right Foot, increase counter and add cell to be affected
-                if (RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance))
+                if (RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, raycastDistance))
                 {
                     // Cell contacting directly
                     heightMapRightBool[zi + gridSize, xi + gridSize] = 2;
                     counterHitsRight++;
 
                     if (showGridDebugRight)
-                        Debug.DrawRay(rayGridWorldRight, Vector3.up * rayDistance, Color.blue);
+                        Debug.DrawRay(rayGridWorldRight, Vector3.up * raycastDistance, Color.blue);
                 }
                 else
                 {
@@ -326,7 +330,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                     heightMapRightBool[zi + gridSize, xi + gridSize] = 0;
 
                     if (showGridDebugRight)
-                        Debug.DrawRay(rayGridWorldRight, Vector3.up * rayDistance, Color.red);
+                        Debug.DrawRay(rayGridWorldRight, Vector3.up * raycastDistance, Color.red);
                 }
             }
         }
@@ -340,7 +344,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             areaTotalLeft = ((counterHitsLeft) * areaCell);
 
             // Volume under the foot for that recent calculated area
-            volumeOriginalLeft = areaTotalLeft * (originalLength);
+            volumeOriginalLeft = areaTotalLeft * (originalLengthZero);
         }
 
         oldAreaTotalRight = ((counterHitsRight) * areaCell);
@@ -350,7 +354,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             areaTotalRight = ((counterHitsRight) * areaCell);
 
             // Volume under the foot for that recent calculated area
-            volumeOriginalRight = areaTotalRight * (originalLength);
+            volumeOriginalRight = areaTotalRight * (originalLengthZero);
         }
 
         // Total Area and Volume for both feet
@@ -387,6 +391,22 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                             }
                         }
                     }
+
+                    if (heightMapRightBool[zi + gridSize, xi + gridSize] == 1)
+                    {
+                        // C. Each neightbour cell in world space
+                        Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
+                        Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
+
+                        // Also store in general array
+                        neighboursPositionsRight.Add(rayGridWorldRight);
+
+                        // D. Counter neightbours
+                        neighbourCellsRight++;
+
+                        if (showGridBumpDebug)
+                            Debug.DrawRay(rayGridWorldRight, Vector3.up * raycastDistance, Color.yellow);
+                    }
                 }
             }
         }
@@ -417,12 +437,30 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                                 }
                             }
                         }
+
+                        if (heightMapLeftBool[zi + gridSize, xi + gridSize] == 1)
+                        {
+                            // C. Each neightbour cell in world space
+                            Vector3 rayGridLeft = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
+                            Vector3 rayGridWorldLeft = terrain.Grid2World(rayGridLeft);
+
+                            // Also store in general array
+                            neighboursPositionsLeft.Add(rayGridWorldLeft);
+
+                            // D. Counter neightbours
+                            neighbourCellsLeft++;
+
+                            if (showGridBumpDebug)
+                                Debug.DrawRay(rayGridWorldLeft, Vector3.up * raycastDistance, Color.yellow);
+
+                        }
                     }
                 }
             }
         }
 
-        // Separate sum of neighbour cells
+        /*
+        // Separate sum of neighbour cells - OMIT
         for (int zi = -gridSize + offsetBumpGrid; zi <= gridSize - offsetBumpGrid; zi++)
         {
             for (int xi = -gridSize + offsetBumpGrid; xi <= gridSize - offsetBumpGrid; xi++)
@@ -438,12 +476,16 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
                     // D. Counter neightbours
                     neighbourCellsLeft++;
+
+                    if(showGridBumpDebug)
+                        Debug.DrawRay(rayGridWorldLeft, Vector3.up * raycastDistance, Color.yellow);
+
                 }
 
                 if (heightMapRightBool[zi + gridSize, xi + gridSize] == 1)
                 {
                     // B. Each neightbour cell in world space
-                    Vector3 rayGridRight = new Vector3(xLeft + xi, terrain.Get(xLeft + xi, zLeft + zi) - offsetRay, zLeft + zi);
+                    Vector3 rayGridRight = new Vector3(xRight + xi, terrain.Get(xRight + xi, zRight + zi) - offsetRay, zRight + zi);
                     Vector3 rayGridWorldRight = terrain.Grid2World(rayGridRight);
 
                     // Also store in general array
@@ -451,9 +493,13 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
                     // D. Counter neightbours
                     neighbourCellsRight++;
+
+                    if (showGridBumpDebug)
+                        Debug.DrawRay(rayGridWorldRight, Vector3.up * raycastDistance, Color.yellow);
                 }
             }
         }
+        */
 
         // Initialize the weights uniformly
         for (int zi = -gridSize + offsetBumpGrid; zi <= gridSize - offsetBumpGrid; zi++)
@@ -475,7 +521,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         //
 
         // === Modulated Bump === //
+        #region Modulated Bump
 
+        /*
         // Estimate projection of normalized force - Left Foot
         forcePositionLeft = new Vector3(RealTotalForceLeft.x, RealTotalForceLeft.y, RealTotalForceLeft.z);
         forcePositionLeft2D = Vector3.ProjectOnPlane(forcePositionLeft.normalized, Vector3.up);
@@ -500,10 +548,8 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         weightCellLeftTotal = 0f;
         weightCellRightTotal = 0f;
 
-        // ====================== //
-
         // 2. Calculating number of neightbouring hits to later get the area
-        // 2. Calculating max distance and not-normalized weight
+        // Calculating max distance and not-normalized weight
         if (applyModulatedBumps)
         {
             for (int zi = -gridSize + offsetBumpGrid; zi <= gridSize - offsetBumpGrid; zi++)
@@ -694,8 +740,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                     {
                         if(applyModulatedBumps)
                             Debug.DrawRay(rayGridWorldLeft, Vector3.up * weightsBumpLeft[zi + gridSize, xi + gridSize], Color.yellow);
-                        else
-                            Debug.DrawRay(rayGridWorldLeft, Vector3.up * weightsBumpLeftInit[zi + gridSize, xi + gridSize], Color.yellow);
                     }
                 }
 
@@ -712,12 +756,15 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                         // CAUTION: TO COMPARE ONLY -> TODO CHANGE INIT
                         if(applyModulatedBumps)
                             Debug.DrawRay(rayGridWorldRight, Vector3.up * weightsBumpRightInit[zi + gridSize, xi + gridSize], Color.red);
-                        else
-                            Debug.DrawRay(rayGridWorldRight, Vector3.up * weightsBumpRightInit[zi + gridSize, xi + gridSize], Color.red);
                     }
                 }
             }
         }
+        */
+
+        // ====================== //
+
+        #endregion
 
         // Front/Back classification - Not used
         #region Front/Back
@@ -823,14 +870,14 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         oldNeighbourAreaTotalLeft = ((neighbourCellsLeft) * areaCell);
         if (oldNeighbourAreaTotalLeft >= neighbourAreaTotalLeft)
         {
-            // Area of bump - Not used yet - TODO
+            // Area of bump
             neighbourAreaTotalLeft = ((neighbourCellsLeft) * areaCell);
         }
 
         oldNeighbourAreaTotalRight = ((neighbourCellsRight) * areaCell);
         if (oldNeighbourAreaTotalRight >= neighbourAreaTotalRight)
         {
-            // Area of bump - Not used yet - TODO
+            // Area of bump
             neighbourAreaTotalRight = ((neighbourCellsRight) * areaCell);
         }
 
@@ -866,36 +913,34 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         // The decrement will depend also on the ContactTime used to calculate the corresponding force
 
         // 2. As for the area, we keep the maximum value
-
-        oldHeightCellDisplacementYoungLeft = pressureStressLeft * (originalLength / (youngModulus));
+        oldHeightCellDisplacementYoungLeft = pressureStressLeft * (originalLengthZero / (youngModulus));
         if (oldHeightCellDisplacementYoungLeft >= heightCellDisplacementYoungLeft)
         {
             // We use abs. value but for compression, the change in length is negative
-            heightCellDisplacementYoungLeft = pressureStressLeft * (originalLength / youngModulus);
+            heightCellDisplacementYoungLeft = pressureStressLeft * (originalLengthZero / youngModulus);
 
             // Resulting volume under the left foot after displacement - CHANGED
-            volumeTotalLeft = areaTotalLeft * (originalLength + (-heightCellDisplacementYoungLeft));
+            volumeTotalLeft = areaTotalLeft * (originalLengthZero + (-heightCellDisplacementYoungLeft));
 
             // Calculate the difference in volume, takes into account the compressibility and estimate volume up per neighbour cell
             volumeDifferenceLeft =  volumeTotalLeft - volumeOriginalLeft; // NEGATIVE CHANGE
             volumeNetDifferenceLeft = -volumeDifferenceLeft + volumeVariationPoissonLeft; // Calculate directly the volume in the bump upwards (positive)
+            
+            // Distribute volume
             volumeCellLeft = volumeNetDifferenceLeft / neighbourCellsLeft;
 
-            // 1. Calculate positive deformation for the contour based on the downward deformation and Poisson
-            //newBumpHeightDeformationLeft = ((volumeTotalLeft - volumeVariationPoissonLeft) / areaTotalLeft) - originalLength;
-
             // 2. In this case, we do it with volume. Remember: must be negative for later.
-            newBumpHeightDeformationLeft = volumeCellLeft / areaCell;
+            bumpHeightDeformationLeft = volumeCellLeft / areaCell;
         }
 
-        oldHeightCellDisplacementYoungRight = pressureStressRight * (originalLength / (youngModulus));
+        oldHeightCellDisplacementYoungRight = pressureStressRight * (originalLengthZero / (youngModulus));
         if (oldHeightCellDisplacementYoungRight >= heightCellDisplacementYoungRight)
         {
             // We use abs. value but for compression, the change in length is negative
-            heightCellDisplacementYoungRight = pressureStressRight * (originalLength / youngModulus);
+            heightCellDisplacementYoungRight = pressureStressRight * (originalLengthZero / youngModulus);
 
             // Resulting volume under the right foot after displacement
-            volumeTotalRight = areaTotalRight * (originalLength + (-heightCellDisplacementYoungRight));
+            volumeTotalRight = areaTotalRight * (originalLengthZero + (-heightCellDisplacementYoungRight));
 
             // Calculate the difference in volume, takes into account the compressibility and estimate volume up per neighbour cell
             volumeDifferenceRight = volumeTotalRight - volumeOriginalRight; // NEGATIVE CHANGE
@@ -904,11 +949,8 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             // Distribute volume
             volumeCellRight = volumeNetDifferenceRight / neighbourCellsRight;
 
-            // 1. Calculate positive deformation for the contour based on the downward deformation and Poisson
-            //newBumpHeightDeformationRight = ((volumeTotalRight - volumeVariationPoissonRight) / areaTotalRight) - originalLength;
-
             // 2. In this case, we do it with volume. Remember: must be negative for later.
-            newBumpHeightDeformationRight = volumeCellRight / areaCell;
+            bumpHeightDeformationRight = volumeCellRight / areaCell;
         }
 
         // 3. Given the entire deformation in Y, we calculate the corresponding frame-based deformation based on the frame-time.
@@ -916,19 +958,19 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         displacementRight = (Time.deltaTime * (float)heightCellDisplacementYoungRight) / ContactTime;
 
         // Given the  deformation in Y for the bump, we calculate the corresponding frame-based deformation based on the frame-time.
-        bumpDisplacementLeft = (Time.deltaTime * (float)newBumpHeightDeformationLeft) / ContactTime;
-        bumpDisplacementRight = (Time.deltaTime * (float)newBumpHeightDeformationRight) / ContactTime;
+        bumpDisplacementLeft = (Time.deltaTime * (float)bumpHeightDeformationLeft) / ContactTime;
+        bumpDisplacementRight = (Time.deltaTime * (float)bumpHeightDeformationRight) / ContactTime;
 
         //     Physics+ Calculation     //
         // =============================== //
 
         // Strains (compression) - Info
-        strainLong = -(heightCellDisplacementYoungRight) / originalLength;
+        strainLong = -(heightCellDisplacementYoungRight) / originalLengthZero;
         strainTrans = poissonR * strainLong;
 
         // 1. If Poisson is 0.5 : ideal imcompressible material (no change in volume) - Compression : -/delta_L
-        volumeVariationPoissonLeft = (1 - 2 * poissonR) * (-heightCellDisplacementYoungLeft / originalLength) * volumeOriginalLeft; // NEGATIVE CHANGE
-        volumeVariationPoissonRight = (1 - 2 * poissonR) * (-heightCellDisplacementYoungRight / originalLength) * volumeOriginalRight;
+        volumeVariationPoissonLeft = (1 - 2 * poissonR) * (-heightCellDisplacementYoungLeft / originalLengthZero) * volumeOriginalLeft; // NEGATIVE CHANGE
+        volumeVariationPoissonRight = (1 - 2 * poissonR) * (-heightCellDisplacementYoungRight / originalLengthZero) * volumeOriginalRight;
 
         //        Apply Deformation        //
         // =============================== //
@@ -959,6 +1001,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         //         Apply Smoothing         //
         // =============================== //
 
+        #region Smoothing
+
+        // To solve the discontinuity problem, filter is applied after each terrain displacement per-frame, not at the end.
+
+        /*
         // 1. First smoothing version
         if (applyFilterLeft)
         {
@@ -1006,6 +1053,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 filterIterationsRightCounter = 0;
             }
         }
+        */
+
+        #endregion
     }
 
     IEnumerator DecreaseTerrainLeft(float[,] heightMapLeft, int[,] heightMapLeftBool, float[,] weightsBumpLeftInit, float[,] weightsBumpLeft, int xLeft, int zLeft)
@@ -1024,7 +1074,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 Ray upRayLeftFoot = new Ray(rayGridWorldLeft, Vector3.up);
 
                 // C. If hits the Left Foot and the cell was classified with 2 (direct contact) or 1 (countour):
-                if (LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 2))
+                if (LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, raycastDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 2))
                 {
                     // D. Cell contacting directly - Decrease until limit reached
                     if (terrain.Get(rayGridLeft.x, rayGridLeft.z) >= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) - heightCellDisplacementYoungLeft)
@@ -1038,11 +1088,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                         heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z);
                     }
                 }
-                else if (!LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, rayDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 1) && applyBumps)
+                else if (!LeftFootCollider.Raycast(upRayLeftFoot, out leftFootHit, raycastDistance) && (heightMapLeftBool[zi + gridSize, xi + gridSize] == 1) && applyBumps)
                 {
                     if(applyModulatedBumps)
                     {
-                        if(terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + newBumpHeightDeformationLeft * (weightsBumpLeft[zi + gridSize, xi + gridSize] * neighbourCellsLeft))
+                        if(terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + bumpHeightDeformationLeft * (weightsBumpLeft[zi + gridSize, xi + gridSize] * neighbourCellsLeft))
                         {
                             heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (bumpDisplacementLeft);
                         }
@@ -1053,7 +1103,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                     }
                     else
                     {
-                        if(terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + newBumpHeightDeformationLeft * (weightsBumpLeftInit[zi + gridSize, xi + gridSize] * neighbourCellsLeft))
+                        if(terrain.Get(rayGridLeft.x, rayGridLeft.z) <= terrain.GetConstant(rayGridLeft.x, rayGridLeft.z) + bumpHeightDeformationLeft * (weightsBumpLeftInit[zi + gridSize, xi + gridSize] * neighbourCellsLeft))
                         {
                             heightMapLeft[zi + gridSize, xi + gridSize] = terrain.Get(rayGridLeft.x, rayGridLeft.z) + (bumpDisplacementLeft);
                         }
@@ -1071,7 +1121,30 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             }
         }
 
-        // 2. Save terrain
+        // 2. Applying filtering in frame-basis
+        if (applyFilterLeft)
+        {
+            if (IsLeftFootGrounded && !IsRightFootGrounded)
+            {
+                if (!isFilteredLeft)
+                {
+                    heightMapLeft = NewFilterHeightMapReturn(xLeft, zLeft, heightMapLeft);
+                    filterIterationsLeftCounter++;
+                }
+
+                if (filterIterationsLeftCounter >= filterIterationsLeftFoot)
+                {
+                    isFilteredLeft = true;
+                }
+            }
+            else
+            {
+                isFilteredLeft = false;
+                filterIterationsLeftCounter = 0;
+            }
+        }
+
+        // 3. Save terrain
         if (applyFootprints)
         {
             for (int zi = -gridSize; zi <= gridSize; zi++)
@@ -1103,7 +1176,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 Ray upRayRightFoot = new Ray(rayGridWorldRight, Vector3.up);
 
                 // C. If hits the Right Foot and the cell was classified with 2 (direct contact) or 1 (countour):
-                if (RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 2))
+                if (RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, raycastDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 2))
                 {
                     // D. Cell contacting directly - Decrease until limit reached
                     if (terrain.Get(rayGridRight.x, rayGridRight.z) >= terrain.GetConstant(rayGridRight.x, rayGridRight.z) - heightCellDisplacementYoungRight)
@@ -1117,11 +1190,11 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                         heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z);
                     }
                 } 
-                else if (!RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, rayDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 1) && applyBumps)
+                else if (!RightFootCollider.Raycast(upRayRightFoot, out rightFootHit, raycastDistance) && (heightMapRightBool[zi + gridSize, xi + gridSize] == 1) && applyBumps)
                 {
                     if(applyModulatedBumps)
                     {
-                        if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + newBumpHeightDeformationRight * (weightsBumpRightInit[zi + gridSize, xi + gridSize] * neighbourCellsRight))
+                        if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + bumpHeightDeformationRight * (weightsBumpRightInit[zi + gridSize, xi + gridSize] * neighbourCellsRight))
                         {
                             heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) + (bumpDisplacementRight);
                         }
@@ -1132,7 +1205,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                     }
                     else
                     {
-                        if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + newBumpHeightDeformationRight * (weightsBumpRightInit[zi + gridSize, xi + gridSize] * neighbourCellsRight))
+                        if (terrain.Get(rayGridRight.x, rayGridRight.z) <= terrain.GetConstant(rayGridRight.x, rayGridRight.z) + bumpHeightDeformationRight * (weightsBumpRightInit[zi + gridSize, xi + gridSize] * neighbourCellsRight))
                         {
                             heightMapRight[zi + gridSize, xi + gridSize] = terrain.Get(rayGridRight.x, rayGridRight.z) + (bumpDisplacementRight);
                         }
@@ -1150,7 +1223,30 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             }
         }
 
-        // 2. Save terrain
+        // 2. Applying filtering in frame-basis
+        if (applyFilterRight)
+        {
+            if (IsRightFootGrounded && !IsLeftFootGrounded)
+            {
+                if (!isFilteredRight)
+                {
+                    heightMapRight = NewFilterHeightMapReturn(xRight, zRight, heightMapRight);
+                    filterIterationsRightCounter++;
+                }
+
+                if (filterIterationsRightCounter >= filterIterationsRightFoot)
+                {
+                    isFilteredRight = true;
+                }
+            }
+            else
+            {
+                isFilteredRight = false;
+                filterIterationsRightCounter = 0;
+            }
+        }
+
+        // 3. Save terrain
         if (applyFootprints)
         {
             for (int zi = -gridSize; zi <= gridSize; zi++)
@@ -1265,6 +1361,38 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
                 terrain.Set(rayGridLeft.x, rayGridLeft.z, (heightMapFiltered[zi + gridSize, xi + gridSize]));
             }
         }
+    }
+
+    // New-version Gaussian Blur (3x3) with return 
+    public float[,] NewFilterHeightMapReturn(int x, int z, float[,] heightMap)
+    {
+        float[,] heightMapFiltered = new float[2 * gridSize + 1, 2 * gridSize + 1];
+
+        // Places outside filtering will remain the same
+        heightMapFiltered = heightMap;
+
+        for (int zi = -gridSize + marginAroundGrid; zi <= gridSize - marginAroundGrid; zi++)
+        {
+            for (int xi = -gridSize + marginAroundGrid; xi <= gridSize - marginAroundGrid; xi++)
+            {
+                Vector3 rayGridLeft = new Vector3(x + xi, terrain.Get(x + xi, z + zi), z + zi);
+
+                heightMapFiltered[zi + gridSize, xi + gridSize] =
+                    heightMap[zi + gridSize - 1, xi + gridSize - 1]
+                    + 2 * heightMap[zi + gridSize - 1, xi + gridSize]
+                    + 1 * heightMap[zi + gridSize - 1, xi + gridSize + 1]
+                    + 2 * heightMap[zi + gridSize, xi + gridSize - 1]
+                    + 4 * heightMap[zi + gridSize, xi + gridSize]
+                    + 2 * heightMap[zi + gridSize, xi + gridSize + 1]
+                    + 1 * heightMap[zi + gridSize + 1, xi + gridSize - 1]
+                    + 2 * heightMap[zi + gridSize + 1, xi + gridSize]
+                    + 1 * heightMap[zi + gridSize + 1, xi + gridSize + 1];
+
+                heightMapFiltered[zi + gridSize, xi + gridSize] *= 1.0f / 16.0f;
+            }
+        }
+
+        return heightMapFiltered;
     }
 
     // TEST - Calculate Barycentric Coordinates Right

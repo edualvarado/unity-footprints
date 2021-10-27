@@ -2,8 +2,8 @@
  * File: BrushPhysicalFootprint.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
-   * Date: Created by LIX on 01/08/2021
-   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+   * Date: Created by LIX on 27/10/2021
+   * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
 *****************************************************/
 
 using UnityEngine;
@@ -22,8 +22,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     protected DeformTerrainMaster terrain;
     private Vector3 heightmapSize;
     private Vector3 terrainSize;
-    private TerrainData terrainData;
-    private float[,] heightmap_data_filtered;
 
     // Body Properties
     private GameObject myBipedalCharacter;
@@ -53,14 +51,13 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     private Vector3 centerGridRightFootHeight;
 
     // Material/Ground
-    private bool useTerrainPrefabs;
+    private sourceDeformation deformationChoice;
     private double youngM;
     private int filterIte;
     private float poissonRatio;
     private bool activateBump;
 
     // UI
-    private bool useUI;
     private Slider youngSlider;
     private Slider poissonSlider;
     private Slider iterationsSlider;
@@ -99,16 +96,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return rightFootCollider; }
         set { rightFootCollider = value; }
     }
-    public float WeightInLeftFoot
-    {
-        get { return weightInLeftFoot; }
-        set { weightInLeftFoot = value; }
-    }
-    public float WeightInRightFoot
-    {
-        get { return weightInRightFoot; }
-        set { weightInRightFoot = value; }
-    }
 
     #endregion
 
@@ -139,11 +126,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #region Terrain Properties
 
-    public TerrainData TerrainData
-    {
-        get { return terrainData; }
-        set { terrainData = value; }
-    }
     public Vector3 TerrainSize
     {
         get { return terrainSize; }
@@ -153,12 +135,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     {
         get { return heightmapSize; }
         set { heightmapSize = value; }
-    }
-    public float[,] HeightMapFiltered
-    {
-        get { return heightmap_data_filtered; }
-        set { heightmap_data_filtered = value; }
-
     }
 
     #endregion
@@ -244,7 +220,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         get { return centerGridRightFootHeight; }
         set { centerGridRightFootHeight = value; }
     }
-
     public GameObject MyBipedalCharacter
     {
         get { return myBipedalCharacter; }
@@ -255,16 +230,10 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #region Other Properties
 
-    public bool UseTerrainPrefabs
+    public sourceDeformation DeformationChoice
     {
-        get { return useTerrainPrefabs; }
-        set { useTerrainPrefabs = value; }
-    }
-
-    public bool UseUI
-    {
-        get { return useUI; }
-        set { useUI = value; }
+        get { return deformationChoice; }
+        set { deformationChoice = value; }
     }
 
     public Slider YoungSlider
@@ -319,10 +288,10 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     void Start()
     {
-        // Get the terrain
+        // 1. Get the DeformTerrainMaster class
         terrain = GetComponent<DeformTerrainMaster>();
 
-        // Retrieve once public variables from DeformTerrainMaster.cs
+        // 2. Retrieve once public variables from DeformTerrainMaster.cs
         LeftFootCollider = terrain.leftFootCollider;
         RightFootCollider = terrain.rightFootCollider;
         Mass = terrain.mass;
@@ -335,44 +304,42 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     void Update()
     {
-        // 1. Retrieve each frame public variables from DeformTerrainMaster.cs
+        //       Retrieve each frame public variables from DeformTerrainMaster.cs       //
+        // ============================================================================ //
 
-        // Retrieve Character
+        // 1. Retrieve Character
         MyBipedalCharacter = terrain.myBipedalCharacter;
 
-        // A. Velocity of feet - Calculated in DeformTerrainMaster.cs
-        // Not used
-
         // Gravity + Reaction Force - Calculated in DeformTerrainMaster.cs
-        // B. Only need magnitude in this case - that is why we take the GRF (is fine!)
+        // 2. Only need magnitude in this case - that is why we take the GRF (is fine!)
         TotalForceY = terrain.totalGRForce.y;
         TotalForceLeftY = terrain.totalGRForceLeft.y; 
         TotalForceRightY = terrain.totalGRForceRight.y;
+
         TotalForce = terrain.totalGRForce;
         TotalForceLeft = terrain.totalGRForceLeft;
         TotalForceRight = terrain.totalGRForceRight;
 
-        // Retrieve real total force
+        // 3. Retrieve real total force
         RealTotalForceLeft = terrain.totalForceLeftFoot;
         RealTotalForceRight = terrain.totalForceRightFoot;
         CenterGridLeftFootHeight = terrain.centerGridLeftFootHeight;
         CenterGridRightFootHeight = terrain.centerGridLeftFootHeight;
 
-        // C. Keep track of min and max forces reached during the gait
+        // 4. Keep track of min and max forces reached during the gait
         //MinTotalForceLeftFootZNorm = terrain.minTotalForceLeftFootZNorm;
         //MaxTotalForceLeftFootZNorm = terrain.maxTotalForceLeftFootZNorm;
         //MinTotalForceRightFootZNorm = terrain.minTotalForceRightFootZNorm;
         //MaxTotalForceRightFootZNorm = terrain.maxTotalForceRightFootZNorm;
 
-        // D. Are the feet grounded?
+        // 5. Are the feet grounded?
         IsLeftFootGrounded = terrain.isLeftFootGrounded;
         IsRightFootGrounded = terrain.isRightFootGrounded;
 
-        // E. Get if we are using prefabs option
-        UseTerrainPrefabs = terrain.useTerrainPrefabs;
+        // 6. Deformation choice
+        DeformationChoice = terrain.deformationChoice;
 
-        // Get if we are using the UI
-        UseUI = terrain.useUI;
+        // 7. In case we are using the UI
         YoungSlider = terrain.youngSlider;
         PoissonSlider = terrain.poissonSlider;
         IterationsSlider = terrain.iterationsSlider;
@@ -412,13 +379,13 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         return active;
     }
 
-    // 2. Virtual method that is used to pass the feet positions and create the physically-based footprint
+    // Virtual method that is used to pass the feet positions and create the physically-based footprint
     public virtual void CallFootprint(float xLeft, float zLeft, float xRight, float zRight)
     {
         DrawFootprint(xLeft, zLeft, xRight, zRight);
     }
 
-    // abstract = incomplete implementation that will be fullfiled in the child class (TerrainBrush)
+    // Abstract = incomplete implementation that will be fullfiled in the child class (TerrainBrush)
     public abstract void DrawFootprint(float xLeft, float zLeft, float xRight, float zRight);
     public abstract void DrawFootprint(int xLeft, int zLeft, int xRight, int zRight);
 }

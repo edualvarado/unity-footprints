@@ -2,8 +2,8 @@
  * File: DeformTerrainMaster.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
-   * Date: Created by LIX on 01/08/2021
-   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+   * Date: Created by LIX on 27/10/2021
+   * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
 *****************************************************/
 
 using System;
@@ -11,6 +11,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
+public enum sourceDeformation
+{
+    useUI,
+    useTerrainPrefabs,
+    useManualValues
+};
 
 /// <summary>
 /// Master class where we calculate all forces taking place during gait and call footprint child class.
@@ -20,55 +27,60 @@ public class DeformTerrainMaster : MonoBehaviour
     #region Variables
 
     [Header("Bipedal - (SET UP)")]
-    [Tooltip("Your character - make sure is the parent GameObject")]
+    [Tooltip("Your character GameObject")]
     public GameObject myBipedalCharacter;
-    [Tooltip("Collider attached to Left Foot")]
+    [Tooltip("Collider attached to Left Foot to leave footprints")]
     public Collider leftFootCollider;
-    [Tooltip("Collider attached to Right Foot")]
+    [Tooltip("Collider attached to Right Foot to leave footprints")]
     public Collider rightFootCollider;
-    [Tooltip("RB attached to Left Foot")]
+    [Tooltip("RB attached to Left Foot used for velocity estimation")]
     public Rigidbody leftFootRB;
-    [Tooltip("RB attached to Right Foot")]
+    [Tooltip("RB attached to Right Foot for velocity estimation")]
     public Rigidbody rightFootRB;
+
+    [Header("Source of Deformation - (SET UP)")]
+    public sourceDeformation deformationChoice;
 
     [Header("Terrain Deformation - Contact Time Settings - (SET UP)")]
     public float timePassed = 0f;
     [Tooltip("Time that the terrain requires to absorve the force from the hitting foot. More time results in a smaller require force. On the other hand, for less time, the terrain requires a larger force to stop the foot.")]
     public float contactTime = 0.1f;
     [Tooltip("Small delay, sometimes needed, to give the system enough time to perform the deformation.")]
-    public float offset = 0.5f;
+    private float offset = 0.5f;
 
     [Header("Terrain Prefabs - Settings - (SET UP)")]
-    public bool useTerrainPrefabs = false;
+    [Space(10)]
     public double youngModulusSnow = 200000;
     public float timeSnow = 0.2f;
-    public float poissonRatioSnow = 0.1f;
     public bool bumpSnow = false;
+    public float poissonRatioSnow = 0.1f;
     public int filterIterationsSnow = 0;
+    [Space(10)]
     public double youngModulusDrySand = 600000;
     public float timeDrySand = 0.3f;
-    public float poissonRatioSand = 0.2f;
     public bool bumpSand = false;
+    public float poissonRatioSand = 0.2f;
     public int filterIterationsSand = 5;
+    [Space(10)]
     public double youngModulusMud = 350000;
     public float timeMud = 0.8f;
-    public float poissonRatioMud = 0.4f;
     public bool bumpMud = false;
+    public float poissonRatioMud = 0.4f;
     public int filterIterationsMud = 2;
+    [Space(10)]
+    public double youngModulusSoil = 350000;
+    public float timeSoil = 0.8f;
+    public bool bumpSoil = false;
+    public float poissonRatioSoil = 0.4f;
+    public int filterIterationsSoil = 2;
 
     [Header("Bipedal - System Info")]
     [Space(20)]
     public float mass;
-    public Animator _anim;
-    private IKFeetPlacement _feetPlacement = null;
-
-    [Header("Bipedal - Feet Info")]
     public bool printFeetPositions = false;
     public bool isLeftFootGrounded;
     public bool isRightFootGrounded;
-    [Tooltip("Using pivotWeight to get weight relative to foot position")]
     public float weightInLeftFoot;
-    [Tooltip("Using pivotWeight to get weight relative to foot position")]
     public float weightInRightFoot;
     public float heightIKLeft;
     public float heightIKRight;
@@ -80,6 +92,8 @@ public class DeformTerrainMaster : MonoBehaviour
     private Vector3 newIKRightPosition;
     private Vector3 oldIKLeftPosition;
     private Vector3 oldIKRightPosition;
+    private Animator _anim;
+    private IKFeetPlacement _feetPlacement = null;
 
     [Header("Bipedal - Physics - Debug")]
     [Space(20)]
@@ -97,10 +111,8 @@ public class DeformTerrainMaster : MonoBehaviour
     public Vector3 weightForceRight;
 
     [Header("Bipedal - Physics - Feet Velocities Info")]
-    public Vector3 newFeetSpeedLeft = Vector3.zero;
-    public Vector3 newFeetSpeedRight = Vector3.zero;
-    private Vector3 feetSpeedLeft = Vector3.zero;
-    private Vector3 feetSpeedRight = Vector3.zero;
+    public Vector3 feetSpeedLeft = Vector3.zero;
+    public Vector3 feetSpeedRight = Vector3.zero;
 
     [Header("Bipedal - Physics - Impulse and Momentum Forces Info")]
     public Vector3 feetImpulseLeft = Vector3.zero;
@@ -133,7 +145,6 @@ public class DeformTerrainMaster : MonoBehaviour
 
     [Header("UI for DEMO mode")]
     [Space(20)]
-    public bool useUI;
     public Slider youngSlider;
     public Slider timeSlider;
     public Slider poissonSlider;
@@ -143,6 +154,7 @@ public class DeformTerrainMaster : MonoBehaviour
     public Toggle activateToggleGauss;
     public Toggle activateToggleShowGrid;
     public Toggle activateToggleShowBump;
+    public Toggle activateToggleShowForceModel;
 
     // Types of brushes
     private BrushPhysicalFootprint brushPhysicalFootprint;
@@ -201,7 +213,7 @@ public class DeformTerrainMaster : MonoBehaviour
         {
             //terrain = Terrain.activeTerrain;
             terrain = myBipedalCharacter.GetComponent<RigidBodyControllerSimpleAnimator>().currentTerrain;
-            Debug.Log("[INFO] Main terrain: " + terrain.name);
+            Debug.Log("[INFO] First terrain: " + terrain.name);
         }
 
         terrain_collider = terrain.GetComponent<Collider>();
@@ -233,70 +245,121 @@ public class DeformTerrainMaster : MonoBehaviour
         //       Initial Information       //
         // =============================== //
 
-        // 1. Define type of terrain where we are
-        if (brushPhysicalFootprint)
-        {
-            if (useTerrainPrefabs)
-            {
-                if (terrain.CompareTag("Snow"))
-                    DefineSnow();
-                else if (terrain.CompareTag("Dry Sand"))
-                    DefineDrySand();
-                else if (terrain.CompareTag("Mud"))
-                    DefineMud();
-                else
-                    DefineDefault();
-            }
-
-            if (useUI)
-            {
-                contactTime = timeSlider.value;
-            }
-        }
+        // 1. Define source of deformation where we are
+        DefineSourceDeformation();
 
         // 2. If we change the terrain, we change the data as well - both must have different GameObject names
-        if (terrain.name != myBipedalCharacter.GetComponent<RigidBodyControllerSimpleAnimator>().currentTerrain.name)
-        {
-            // Extract terrain information
-            terrain = myBipedalCharacter.GetComponent<RigidBodyControllerSimpleAnimator>().currentTerrain;
-            Debug.Log("[INFO] Updating to new terrain: " + terrain.name);
-
-            terrain_collider = terrain.GetComponent<Collider>();
-            terrain_data = terrain.terrainData;
-            terrain_size = terrain_data.size;
-            heightmap_width = terrain_data.heightmapResolution;
-            heightmap_height = terrain_data.heightmapResolution;
-            heightmap_data = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
-            heightmap_data_constant = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
-            heightmap_data_filtered = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
-        }
+        UpdateTerrain();
 
         // 3. Saving other variables for debugging purposes
-        heightIKLeft = _feetPlacement.LeftFootIKPosition.y;
-        heightIKRight = _feetPlacement.RightFootIKPosition.y;
+        UpdateFeetPositions();
 
-        isLeftFootGrounded = _feetPlacement.isLeftFootGrounded;
-        isRightFootGrounded = _feetPlacement.isRightFootGrounded;
+        // 4. Calculate Force Model
+        CalculateForceModel();
 
-        centerGridLeftFoot = World2Grid(_feetPlacement.LeftFootIKPosition.x, _feetPlacement.LeftFootIKPosition.z);
-        centerGridRightFoot = World2Grid(_feetPlacement.RightFootIKPosition.x, _feetPlacement.RightFootIKPosition.z);
+        // Quadrupeds Information //
+        /////////// TODO ///////////
 
-        centerGridLeftFootHeight = new Vector3(_feetPlacement.LeftFootIKPosition.x, Get(centerGridLeftFoot.x, centerGridLeftFoot.z), _feetPlacement.LeftFootIKPosition.z);
-        centerGridRightFootHeight = new Vector3(_feetPlacement.RightFootIKPosition.x, Get(centerGridRightFoot.x, centerGridRightFoot.z), _feetPlacement.RightFootIKPosition.z);
+        // =============================== //
 
-        // 4. Calculate Proportion Feet Pivot //
-        // ================================== //
+        // 5. Print feet and force information if wished
+        DebugForceModel();
 
-        // 1. Bipedal -- _anim.pivotWeight only for bipedals
-        // 2. Quadrupeds -- New method on the way based on barycentric coordinates
+        //       Applying Deformation       //
+        // ================================ //
+
+        // 6. Apply procedural brush to deform the terrain based on the force model
+        ApplyDeformation();
+    }
+
+    #region Update Methods
+
+    private void ApplyDeformation()
+    {
+        // A. Apply brush to feet
+        if (brushPhysicalFootprint)
+        {
+            // Brush is only called if we are within the contactTime.
+            // Due to the small values, the provisional solution requires to add an offset to give the system enough time to create the footprint.
+            timePassed += Time.deltaTime;
+            if (timePassed <= contactTime + offset)
+            {
+                // Brush that takes limbs positions and creates physically-based footprints
+                brushPhysicalFootprint.CallFootprint(_feetPlacement.LeftFootIKPosition.x, _feetPlacement.LeftFootIKPosition.z,
+                    _feetPlacement.RightFootIKPosition.x, _feetPlacement.RightFootIKPosition.z);
+            }
+        }
+
+        // B. Provisional: We reset the time passed everytime when we lift the feet.
+        // Not very accurate, it would be better to create a time variable per feet and pass it though the method.
+        if ((!isLeftFootGrounded || !isRightFootGrounded) && isMoving)
+        {
+            timePassed = 0f;
+        }
+
+        // C. Provisional: When is still (once) - Stopping when reaching the deformation required was not giving very good results -> TODO: Improve!
+        if (!isMoving && (!isLeftFootGrounded || !isRightFootGrounded) && provCounter <= 3)
+        {
+            timePassed = 0f;
+            provCounter += 1;
+        }
+
+        // D. Provisional: Each time I change motion, resets the time.
+        isMoving = _anim.GetBool("isWalking");
+        if (isMoving != oldIsMoving)
+        {
+            timePassed = 0f;
+            oldIsMoving = isMoving;
+            provCounter = 0;
+        }
+    }
+
+    private void DebugForceModel()
+    {
+        // A. Print the position of the feet in both systems (world and grid)
+        if (printFeetPositions)
+        {
+            Debug.Log("[INFO] Left Foot Coords (World): " + _feetPlacement.LeftFootIKPosition.ToString());
+            Debug.Log("[INFO] Left Foot Coords (Grid): " + centerGridLeftFoot.ToString());
+            Debug.Log("[INFO] Right Foot Coords (World): " + _feetPlacement.RightFootIKPosition.ToString());
+            Debug.Log("[INFO] Right Foot Coords (Grid): " + centerGridRightFoot.ToString());
+            Debug.Log("-----------------------------------------");
+        }
+
+        // B. Print the forces
+        if (printFeetForces)
+        {
+            Debug.Log("[INFO] Weight Force: " + weightForce);
+
+            Debug.Log("[INFO] Left Foot Speed: " + feetSpeedLeft);
+            Debug.Log("[INFO] Right Foot Speed: " + feetSpeedRight);
+
+            Debug.Log("[INFO] Left Foot Impulse: " + feetImpulseLeft);
+            Debug.Log("[INFO] Right Foot Impulse: " + feetImpulseRight);
+
+            Debug.Log("[INFO] Left Foot Momentum: " + momentumForceLeft);
+            Debug.Log("[INFO] Right Foot Momentum: " + momentumForceRight);
+
+            Debug.Log("[INFO] GRF Left Foot: " + totalGRForceLeft);
+            Debug.Log("[INFO] GRF Right Foot: " + totalGRForceRight);
+
+            Debug.Log("[INFO] Total Force Left Foot: " + totalForceLeftFoot);
+            Debug.Log("[INFO] Total Force Right Foot: " + totalForceRightFoot);
+            Debug.Log("-----------------------------------------");
+        }
+    }
+
+    private void CalculateForceModel()
+    {
+        // A. Bipedal -- _anim.pivotWeight only for bipeds
         if (isLeftFootGrounded && isRightFootGrounded)
         {
             weightInLeftFoot = (1 - _anim.pivotWeight);
             weightInRightFoot = (_anim.pivotWeight);
-        }           
+        }
         else
         {
-            if(!isLeftFootGrounded)
+            if (!isLeftFootGrounded)
             {
                 weightInLeftFoot = 0f;
                 weightInRightFoot = 1f;
@@ -308,15 +371,12 @@ public class DeformTerrainMaster : MonoBehaviour
             }
         }
 
-        //       Bipedal Information       //
-        // =============================== //
-
-        //  1. Calculate Forces for the feet  //
+        //       Bipedal Force Model       //
         // =============================== //
 
         if (brushPhysicalFootprint)
         {
-            // A. Weight Forces - Negative Y-component
+            // B. Weight Forces - Negative Y-component
             weightForce = mass * (Physics.gravity);
             weightForceLeft = weightForce * (weightInLeftFoot);
             weightForceRight = weightForce * (weightInRightFoot);
@@ -349,36 +409,23 @@ public class DeformTerrainMaster : MonoBehaviour
 
             //--------------
 
-            // ake only velocities going downward //
-            // ================================== //
+            // Only velocities going downward //
+            // ================================ //
 
             // B. Impulse per foot - Linear Momentum change (final velocity for the feet is 0)
             //feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
             //feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
 
-            // Old Velocity version //
-            //////////////////////////
-
-            //if (feetSpeedLeft.y <= 0f)
-            //    feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
-            //else
-            //    feetImpulseLeft = Vector3.zero;
-
-            //if (feetSpeedRight.y <= 0f)
-            //    feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
-            //else
-            //    feetImpulseRight = Vector3.zero;
-
             // New Velocity version //
             //////////////////////////
 
-            if (newFeetSpeedLeft.y <= 0f)
-                feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - newFeetSpeedLeft);
+            if (feetSpeedLeft.y <= 0f)
+                feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
             else
                 feetImpulseLeft = Vector3.zero;
 
-            if (newFeetSpeedRight.y <= 0f)
-                feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - newFeetSpeedRight);
+            if (feetSpeedRight.y <= 0f)
+                feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
             else
                 feetImpulseRight = Vector3.zero;
 
@@ -408,12 +455,12 @@ public class DeformTerrainMaster : MonoBehaviour
             // Momentum Forces are created when we hit the ground (that is, when such forces are positive in y, and the feet are grounded)
             if (drawMomentumForces && isMoving && isLeftFootGrounded)
             {
-                DrawForce.ForDebug3D(centerGridLeftFootHeight, momentumForceLeft, Color.red, 0.0025f);
+                DrawForce.ForDebug3D(centerGridLeftFootHeight, -momentumForceLeft, Color.red, 0.0025f);
             }
 
             if (drawMomentumForces && isMoving && isRightFootGrounded)
             {
-                DrawForce.ForDebug3D(centerGridRightFootHeight, momentumForceRight, Color.red, 0.0025f);
+                DrawForce.ForDebug3D(centerGridRightFootHeight, -momentumForceRight, Color.red, 0.0025f);
             }
 
             //--------------
@@ -462,6 +509,7 @@ public class DeformTerrainMaster : MonoBehaviour
             //--------------
 
             // Save max/min values reached for the feet forces in Z
+            /*
             maxTotalForceLeftFootZOld = totalForceLeftFoot.z;
             if(maxTotalForceLeftFootZOld > maxTotalForceLeftFootZ)
             {
@@ -474,7 +522,7 @@ public class DeformTerrainMaster : MonoBehaviour
                 minTotalForceLeftFootZ = minTotalForceLeftFootZOld;
                 minTotalForceLeftFootZNorm = totalForceLeftFoot.normalized.z;
             }
-
+            
             // Reset Values
             if (!isLeftFootGrounded)
             {
@@ -507,6 +555,7 @@ public class DeformTerrainMaster : MonoBehaviour
                 maxTotalForceRightFootZNorm = 0f;
                 minTotalForceRightFootZNorm = 0f;
             }
+            */
 
             //--------------
 
@@ -532,89 +581,97 @@ public class DeformTerrainMaster : MonoBehaviour
                 }
             }
         }
+    }
 
-        // Quadrupeds Information //
-        /////////// TODO ///////////
+    private void UpdateFeetPositions()
+    {
+        // A. Save height of feet IK
+        heightIKLeft = _feetPlacement.LeftFootIKPosition.y;
+        heightIKRight = _feetPlacement.RightFootIKPosition.y;
 
-        // =============================== //
+        // B. Flags to detect when the foot is on the ground
+        isLeftFootGrounded = _feetPlacement.isLeftFootGrounded;
+        isRightFootGrounded = _feetPlacement.isRightFootGrounded;
 
-        // F. Print the position of the feet in both systems (world and grid)
-        if (printFeetPositions)
+        // C. Grid-based feet positions and heights
+        centerGridLeftFoot = World2Grid(_feetPlacement.LeftFootIKPosition.x, _feetPlacement.LeftFootIKPosition.z);
+        centerGridRightFoot = World2Grid(_feetPlacement.RightFootIKPosition.x, _feetPlacement.RightFootIKPosition.z);
+        centerGridLeftFootHeight = new Vector3(_feetPlacement.LeftFootIKPosition.x, Get(centerGridLeftFoot.x, centerGridLeftFoot.z), _feetPlacement.LeftFootIKPosition.z);
+        centerGridRightFootHeight = new Vector3(_feetPlacement.RightFootIKPosition.x, Get(centerGridRightFoot.x, centerGridRightFoot.z), _feetPlacement.RightFootIKPosition.z);
+    }
+
+    private void UpdateTerrain()
+    {
+        // A. Every time we change to other terrainData, we update
+        if (terrain.name != myBipedalCharacter.GetComponent<RigidBodyControllerSimpleAnimator>().currentTerrain.name)
         {
-            Debug.Log("[INFO] Left Foot Coords (World): " + _feetPlacement.LeftFootIKPosition.ToString());
-            Debug.Log("[INFO] Left Foot Coords (Grid): " + centerGridLeftFoot.ToString());
-            Debug.Log("[INFO] Right Foot Coords (World): " + _feetPlacement.RightFootIKPosition.ToString());
-            Debug.Log("[INFO] Right Foot Coords (Grid): " + centerGridRightFoot.ToString());
-            Debug.Log("-----------------------------------------");
-        }
+            // Extract terrain information
+            terrain = myBipedalCharacter.GetComponent<RigidBodyControllerSimpleAnimator>().currentTerrain;
+            Debug.Log("[INFO] Updating to new terrain: " + terrain.name);
 
-        // Print the forces
-        if (printFeetForces)
-        {
-            Debug.Log("[INFO] Weight Force: " + weightForce);
-
-            Debug.Log("[INFO] Left Foot Speed: " + feetSpeedLeft);
-            Debug.Log("[INFO] Right Foot Speed: " + feetSpeedRight);
-
-            Debug.Log("[INFO] Left Foot Impulse: " + feetImpulseLeft);
-            Debug.Log("[INFO] Right Foot Impulse: " + feetImpulseRight);
-
-            Debug.Log("[INFO] Left Foot Momentum: " + momentumForceLeft);
-            Debug.Log("[INFO] Right Foot Momentum: " + momentumForceRight);
-
-            Debug.Log("[INFO] GRF Left Foot: " + totalGRForceLeft);
-            Debug.Log("[INFO] GRF Right Foot: " + totalGRForceRight);
-
-            Debug.Log("[INFO] Total Force Left Foot: " + totalForceLeftFoot);
-            Debug.Log("[INFO] Total Force Right Foot: " + totalForceRightFoot);
-            Debug.Log("-----------------------------------------");
-        }
-
-        // =============================== //
-
-        // 2. Apply brush to feet
-        if (brushPhysicalFootprint)
-        {
-            // Brush is only called if we are within the contactTime.
-            // Due to the small values, the provisional solution requires to add an offset to give the system enough time to create the footprint.
-            timePassed += Time.deltaTime;
-            if (timePassed <= contactTime + offset)
-            {
-                // Brush that takes limbs positions and creates physically-based footprints
-                brushPhysicalFootprint.CallFootprint(_feetPlacement.LeftFootIKPosition.x, _feetPlacement.LeftFootIKPosition.z,
-                    _feetPlacement.RightFootIKPosition.x, _feetPlacement.RightFootIKPosition.z);
-            }
-        }
-
-        // 3. Provisional: We reset the time passed everytime when we lift the feet.
-        // A. Not very accurate, it would be better to create a time variable per feet and pass it though the method.
-        if ((!isLeftFootGrounded || !isRightFootGrounded) && isMoving)
-        {
-            timePassed = 0f;
-        }
-
-        // Provisional: When is still (once) - Stopping when reaching the deformation required was not giving very good results -> TODO: Improve!
-        if (!isMoving && (!isLeftFootGrounded || !isRightFootGrounded) && provCounter <= 3)
-        {
-            timePassed = 0f;
-            provCounter += 1;
-        }
-
-        // B. Provisional: Each time I change motion, resets the time.
-        isMoving = _anim.GetBool("isWalking");
-        if (isMoving != oldIsMoving)
-        {
-            timePassed = 0f;
-            oldIsMoving = isMoving;
-            provCounter = 0;
+            terrain_collider = terrain.GetComponent<Collider>();
+            terrain_data = terrain.terrainData;
+            terrain_size = terrain_data.size;
+            heightmap_width = terrain_data.heightmapResolution;
+            heightmap_height = terrain_data.heightmapResolution;
+            heightmap_data = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
+            heightmap_data_constant = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
+            heightmap_data_filtered = terrain_data.GetHeights(0, 0, heightmap_width, heightmap_height);
         }
     }
 
+    private void DefineSourceDeformation()
+    {
+        // A. Select type of deformation (UI, Prefabs or Manual)
+        switch (deformationChoice)
+        {
+            case sourceDeformation.useUI:
+                if (brushPhysicalFootprint)
+                {
+                    // Time is managed from the master script - others from the footprint script
+                    contactTime = timeSlider.value;
+
+                    // Force Model UI
+                    drawWeightForces = activateToggleShowForceModel.isOn;
+                    drawMomentumForces = activateToggleShowForceModel.isOn;
+                    drawGRForces = activateToggleShowForceModel.isOn;
+                    drawFeetForces = activateToggleShowForceModel.isOn;
+
+                }
+                break;
+            case sourceDeformation.useManualValues:
+                break;
+            case sourceDeformation.useTerrainPrefabs:
+
+                if (brushPhysicalFootprint)
+                {
+                    if (terrain.CompareTag("Snow"))
+                        DefineSnow();
+                    else if (terrain.CompareTag("Dry Sand"))
+                        DefineDrySand();
+                    else if (terrain.CompareTag("Mud"))
+                        DefineMud();
+                    else if (terrain.CompareTag("Soil"))
+                        DefineSoil();
+                    else
+                        DefineDefault();
+                }
+                break;
+        }
+    }
+
+    #endregion
+
     public void FixedUpdate()
     {
-        // Calculate Velocity for the feet //
-        // =============================== //
+        // 1. Calculate Velocity for the feet
+        CalculateFeetVelocity();
+    }
 
+    #region Fixed Update Methods
+
+    private void CalculateFeetVelocity()
+    {
         // Left to compare with the new velocity
         newIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position; // Before: LeftFoot
         newIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
@@ -637,18 +694,22 @@ public class DeformTerrainMaster : MonoBehaviour
         }
 
         // Calculate New Velocity for the feet //
-        // =============================== //
+        // =================================== //
 
-        newFeetSpeedLeft = leftFootRB.velocity;
-        newFeetSpeedRight = rightFootRB.velocity;
+        feetSpeedLeft = leftFootRB.velocity;
+        feetSpeedRight = rightFootRB.velocity;
 
         if (drawNewVelocities)
         {
-            DrawForce.ForDebug3DVelocity(oldIKLeftPosition, newFeetSpeedLeft, Color.cyan, 1f);
-            DrawForce.ForDebug3DVelocity(oldIKRightPosition, newFeetSpeedRight, Color.cyan, 1f);
+            DrawForce.ForDebug3DVelocity(oldIKLeftPosition, feetSpeedLeft, Color.cyan, 1f);
+            DrawForce.ForDebug3DVelocity(oldIKRightPosition, feetSpeedRight, Color.cyan, 1f);
 
         }
     }
+
+    #endregion
+
+    #region Prefabs
 
     // Methods use to define new materials
     public void DefineSnow()
@@ -680,6 +741,15 @@ public class DeformTerrainMaster : MonoBehaviour
         brushPhysicalFootprint.ActivateBump = bumpMud;
     }
 
+    public void DefineSoil()
+    {
+        brushPhysicalFootprint.YoungM = youngModulusSoil;
+        contactTime = timeSoil;
+        brushPhysicalFootprint.FilterIte = filterIterationsSoil;
+        brushPhysicalFootprint.PoissonRatio = poissonRatioSoil;
+        brushPhysicalFootprint.ActivateBump = bumpSoil;
+    }
+
     public void DefineDefault()
     {
         brushPhysicalFootprint.YoungM = 750000;
@@ -687,6 +757,7 @@ public class DeformTerrainMaster : MonoBehaviour
         brushPhysicalFootprint.PoissonRatio = 0f;
         brushPhysicalFootprint.ActivateBump = false;
     }
+
 
     // ========================= //
     // Define here your material // 
@@ -701,9 +772,12 @@ public class DeformTerrainMaster : MonoBehaviour
 
     // ========================= //
 
+    #endregion
 
     //      Getters       //
     // ================== //
+
+    #region Getters
 
     public Vector3 Get3(int x, int z)
     {
@@ -790,8 +864,12 @@ public class DeformTerrainMaster : MonoBehaviour
                                                   z / heightmap_height);
     }
 
+    #endregion
+
     //      Setters       //
     // ================== //
+
+    #region Setters
 
     // Given one node of the heightmap, set the height
     public void Set(int x, int z, float val)
@@ -806,8 +884,12 @@ public class DeformTerrainMaster : MonoBehaviour
         Set((int)x, (int)z, val);
     }
 
+    #endregion
+
     //      Terrain Methods       //
     // ========================== //
+
+    #region Terrain Methods
 
     // Get dimensions of the heightmap grid
     public Vector3 GridSize()
@@ -1049,4 +1131,6 @@ public class DeformTerrainMaster : MonoBehaviour
     {
         return brushPhysicalFootprint;
     }
+
+    #endregion
 }

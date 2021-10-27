@@ -377,28 +377,28 @@ public class PhysicalFootprintSphere : TerrainBrushPhysicalFootprintSphere
         // =============================== //
 
         // 1. First smoothing version
-        if (applyFilterSphere)
-        {
-            // 2. Provisional: When do we smooth?
-            if (IsSphereGrounded)
-            {
-                if (!isFilteredSphere)
-                {
-                    NewFilterHeightMap(x, z, heightMapSphere);
-                    filterIterationsSphereCounter++;
-                }
+        //if (applyFilterSphere)
+        //{
+        //    // 2. Provisional: When do we smooth?
+        //    if (IsSphereGrounded)
+        //    {
+        //        if (!isFilteredSphere)
+        //        {
+        //            NewFilterHeightMap(x, z, heightMapSphere);
+        //            filterIterationsSphereCounter++;
+        //        }
 
-                if (filterIterationsSphereCounter >= filterIterationsGaussSphere)
-                {
-                    isFilteredSphere = true;
-                }
-            }
-            else
-            {
-                isFilteredSphere = false;
-                filterIterationsSphereCounter = 0;
-            }
-        }
+        //        if (filterIterationsSphereCounter >= filterIterationsGaussSphere)
+        //        {
+        //            isFilteredSphere = true;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        isFilteredSphere = false;
+        //        filterIterationsSphereCounter = 0;
+        //    }
+        //}
     }
 
     IEnumerator DecreaseTerrainSphere(float[,] heightMapSphere, int[,] heightMapSphereBool, int x, int z)
@@ -453,7 +453,31 @@ public class PhysicalFootprintSphere : TerrainBrushPhysicalFootprintSphere
             }
         }
 
-        // 2. Save terrain
+        // 2. Applying filtering in frame-basis
+        if (applyFilterSphere)
+        {
+            // 2. Provisional: When do we smooth?
+            if (IsSphereGrounded)
+            {
+                if (!isFilteredSphere)
+                {
+                    heightMapSphere = NewFilterHeightMapReturn(x, z, heightMapSphere);
+                    filterIterationsSphereCounter++;
+                }
+
+                if (filterIterationsSphereCounter >= filterIterationsGaussSphere)
+                {
+                    isFilteredSphere = true;
+                }
+            }
+            else
+            {
+                isFilteredSphere = false;
+                filterIterationsSphereCounter = 0;
+            }
+        }
+
+        // 3. Save terrain
         if (applyFootprints)
         {
             for (int zi = -gridSize; zi <= gridSize; zi++)
@@ -578,6 +602,38 @@ public class PhysicalFootprintSphere : TerrainBrushPhysicalFootprintSphere
                 terrain.Set(rayGridLeft.x, rayGridLeft.z, (heightMapFiltered[zi + gridSize, xi + gridSize]));
             }
         }
+    }
+
+    // New-version Gaussian Blur (3x3) with return 
+    public float[,] NewFilterHeightMapReturn(int x, int z, float[,] heightMap)
+    {
+        float[,] heightMapFiltered = new float[2 * gridSize + 1, 2 * gridSize + 1];
+
+        // Places outside filtering will remain the same
+        heightMapFiltered = heightMap;
+
+        for (int zi = -gridSize + marginAroundGrid; zi <= gridSize - marginAroundGrid; zi++)
+        {
+            for (int xi = -gridSize + marginAroundGrid; xi <= gridSize - marginAroundGrid; xi++)
+            {
+                Vector3 rayGridLeft = new Vector3(x + xi, terrain.Get(x + xi, z + zi), z + zi);
+
+                heightMapFiltered[zi + gridSize, xi + gridSize] =
+                    heightMap[zi + gridSize - 1, xi + gridSize - 1]
+                    + 2 * heightMap[zi + gridSize - 1, xi + gridSize]
+                    + 1 * heightMap[zi + gridSize - 1, xi + gridSize + 1]
+                    + 2 * heightMap[zi + gridSize, xi + gridSize - 1]
+                    + 4 * heightMap[zi + gridSize, xi + gridSize]
+                    + 2 * heightMap[zi + gridSize, xi + gridSize + 1]
+                    + 1 * heightMap[zi + gridSize + 1, xi + gridSize - 1]
+                    + 2 * heightMap[zi + gridSize + 1, xi + gridSize]
+                    + 1 * heightMap[zi + gridSize + 1, xi + gridSize + 1];
+
+                heightMapFiltered[zi + gridSize, xi + gridSize] *= 1.0f / 16.0f;
+            }
+        }
+
+        return heightMapFiltered;
     }
 
     // TEST - New Gaussian Blur (3x3) - Return (TODO STILL NOT WORK - Version 1 works fine, so skipping)

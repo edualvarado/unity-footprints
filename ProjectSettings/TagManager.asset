@@ -10,6 +10,7 @@ TagManager:
   - Snow
   - Dry Sand
   - Mud
+  - Soil
   layers:
   - Default
   - TransparentFX
