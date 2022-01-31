@@ -59,17 +59,37 @@ The repository contains all the necessary assets to run the project without addi
     │   ├── ...		
     │   ├── Materials		# Materials used for models/grounds
     │   ├── Models 		# Character models containing animation clips, state-machines or rigs
-	├── Scenes		# Scenes ready-to-use
-	├── Scripts 		# .cs scripts for terrain deformation
-	├── Terrain Data	# Data files corresponding to terrain heightmaps
-	├── Textures		# Textures used for models/grounds
+    │	├── Scenes		# Scenes ready-to-use
+    │	├── Scripts 		# .cs scripts for terrain deformation
+    │	├── Terrain Data	# Data files corresponding to terrain heightmaps
+    │	├── Textures		# Textures used for models/grounds
     │   └── ...                
     ├── Docs
     ├── ...				
     ├── README.md
     └── LICENSE
 
-To start: 
+Go to `Assets > Scenes` and open the `Terrain Deformation` scene. Click in the play button, and after that, *select* the Game Object `Terrain` in the hierarchy to trigger on the deformation system. In the Game window, you will find an environment where you can move your character, along with an interface to modify the terrain deformation parameters.
+
+<p align="center">
+  <img src="Docs/Images/unity-demo.png" width="100%">
+</p>
+<p align="center"><em>Figure 3: Demo interface for terrain deformation.</em></p>
+
+In order to start deforming the terrain while you move, make sure that the option `Deformation` in the upper-left corner is active. If you want to activate the lateral dispacement, select the opcion `Bump`. To activate the post-processing using Gaussian Blur, activate `Post-processing`. The options are:
+
+* **Terrain Options**:
+	* Young's Modulus *E*: Defines the elastic constant of the terrain, measured in [Pa]. It has a direct impact on the terrain compressibility. Smaller values lead to more compressible terrains, and therefore deeper deformations.
+	* Contact Time *τ*: Defines the characteristic time of the terrain, measure in [s]. It is the time needed for the character to be fully stopped by a given type of terrain, during which the ground exerts a reaction force. Larger values lead to smaller force values during a larger period of time, while smaller values lead to stronger reaction forces during a short period of time.
+	* Poisson Ratio *ν*: Defines the amount of volume preserved at the end of the deformation, and is adimensional. An ideal incompressible material has a Poisson ratio of 0.5. This will caused a larger bump while the option is active, as the volume during the deformation is totally preserved. As the value of *ν* gets smaller, material compresses and the volume displaced laterally will be lower.
+	* Gaussian Iteratons: Number of iterations for the Gaussian Blur filter. Larger values lead to smoother footprint results.
+* **Show**:
+	* Raycast Grid: Display raycast method to estimate the contact area between the ground and the feet.
+	* Bump: Display contour of the footprint.
+	* Wireframe: Switch to wireframe mode for the 3D terrain mesh.
+	* Forces: Display force model from the kinematic animation in real-time.
+* **Forces**: Values for weight, momentum forces and ground reaction forces per foot. Measured in [N].
+* **Deformation**: Display values for the feet positions, number of ray hits to calculate the contact area, pressure per feet, measured in [N/m²] and compressive displacement, measured in [mm].
 
 <a name="Results"></a>
 ## Results
