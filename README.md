@@ -46,7 +46,7 @@ The static forces that the model exerts on the ground are estimated based on the
 
 Finally, we use a linear plastic model for terrain compression along with a ray-casting method to map the estimated forces into the respective ground deformation. Parameters such as the Young Modulus of Elasticity *E* or Poisson ratio *ν* can be modified to change the behavior of the terrain under deformation.
 
-*For more information, please refer to the paper.*
+*For more information about the method and mathematical background behind the approach, please refer to the paper.*
 
 <a name="Instructions"></a>
 ## Instructions
@@ -69,7 +69,7 @@ The repository contains all the necessary assets to run the project without addi
     ├── README.md
     └── LICENSE
 
-Go to `Assets > Scenes` and open the `Terrain Deformation` scene. Click in the **play button**, and after that, **select** the Game Object `Terrain` in the hierarchy **to trigger on the deformation system**. In the `Game` window, you will find an environment where you can move your character, along with an interface to modify the terrain deformation parameters.
+Go to `Assets > Scenes` and open the `Terrain Deformation` scene. Click in the **play button**, and after that, **select** the Game Object `Terrain` in the Hierarchy **to trigger on the deformation system**. In the `Game` window, you will find an environment where you can move your character, along with an interface to modify the terrain deformation parameters.
 
 <p align="center">
   <img src="Docs/Images/unity-demo.png" width="100%">
@@ -90,6 +90,12 @@ In order to start deforming the terrain while you move, make sure that the optio
 	* **Forces**: Displays force model from the kinematic animation in real-time.
 * **Forces**: Prints the values for weight, momentum forces and ground reaction forces per foot. Measured in [N].
 * **Deformation**: Prints the values for the feet positions, number of ray hits used to calculate the contact area, pressure per foot measured in [N/m²] and compressive displacement per foot measured in [mm].
+
+In order to reset the terrain, just select `Terrain` in the Hierarchy and use the `Set Height` brush in the `Terrain Component` in the Inspector. Then, set the `Height` value to 1 and paint the terrain to reset it (while the application is not playing).
+
+In the folder `Scenes`, you can find the scene `Terrain Deformation - Showcases`. This scene contains three types of grounds (snow, sand and mud), defined by different parametrization. When the character moves though these terrains, the system will switch automatically based on the material where the character is stepping in, changing the deformation appearance.
+
+*For more information about the values for each type of material, please refer to the paper.*
 
 <a name="Results"></a>
 ## Results
