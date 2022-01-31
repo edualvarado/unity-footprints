@@ -18,7 +18,7 @@ This repository provides the codes used to reproduce the results shown in the fo
   <img src="Docs/Gifs/knight-sand-running.gif" width="40%">
 </p>
 
-&nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp;
 
 <p align="center">
   <img src="Docs/Gifs/fairy-snow-walking.gif" width="40%">
