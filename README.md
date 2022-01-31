@@ -59,7 +59,7 @@ Finally, we use a linear plastic model for terrain compression along with a ray-
 </p>
 
 <p align="center">
-  <img src="Docs/Gifs/soils.jpg" width="60%">
+  <img src="Docs/Images/soils.jpg" width="60%">
 </p>
 
 <p align="center">
