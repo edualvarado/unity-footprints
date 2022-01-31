@@ -17,7 +17,7 @@ This repository provides the codes used to reproduce the results shown in the fo
 &nbsp; &nbsp; &nbsp; &nbsp;
   <img src="Docs/Gifs/knight-sand-running.gif" width="35%">
 </p>
-<br/>
+
 <p align="center">
   <img src="Docs/Gifs/fairy-snow-walking.gif" width="35%">
 &nbsp; &nbsp; &nbsp; &nbsp;
