@@ -32,7 +32,7 @@ In order to reproduce two-ways interactions between the model and the environmen
 </p>
 <p align="center"><em>Figure 1: Examples of footprints caused by different character morphologies in various ground types, such as snow or sand.</em></p>
 
-<a name="Force"></a>
+<a name="Terrain"></a>
 ## Real-time Terrain Deformation
 
 We propose a model for the forces that the character applies to the ground when its feet are in contact with it, based on its kinematics and the nature of the ground. The resulting interaction forces over time are used to compute a plausible ground deformation.
