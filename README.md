@@ -42,7 +42,7 @@ The static forces that the model exerts on the ground are estimated based on the
 <p align="center">
   <img src="Docs/Images/forces.png" width="100%">
 </p>
-<p align="center"><em>Figure 2: Forces generated during the kinematic motion. Blue: weight - Red: momentum forces - Black: foot-to-ground forces - Green: ground reaction forces.</em></p>
+<p align="center"><em>Figure 2: Forces generated during the kinematic motion. Blue: weight - Red: momentum forces - Black: foot-to-ground forces.</em></p>
 
 Finally, we use a linear plastic model for terrain compression along with a ray-casting method to map the estimated forces into the respective ground deformation. Parameters such as the Young Modulus of Elasticity *E* or Poisson ratio *ν* can be modified to change the behavior of the terrain under deformation.
 
