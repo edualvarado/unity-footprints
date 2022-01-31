@@ -40,7 +40,7 @@ We propose a model for the forces that the character applies to the ground when 
 The static forces that the model exerts on the ground are estimated based on the character's mass *m*, the contact area between the feet and the ground and the balance described by the contribution of each foot to the character's weight. In addition, a dynamic force model during contact takes into consideration the force that each foot generates due to its change of momentum when it lands into the ground with certain velocity. In order to define the time needed for the character to be fully stopped by a given type of terrain, we introduce an external parameter called the *characteristic time τ*. Therefore, a given forward kinematics motion provided as input can be associated to different forces, ie. a large magnitude of momentum force on a hard terrain with small *τ* value, and small force magnitude with long effect on a soft terrain with large *τ*.
 
 <p align="center">
-  <img src="Docs/Images/forces.png" width="40%">
+  <img src="Docs/Images/forces.png" width="100%">
 </p>
 <p align="center"><em>Figure 2: Forces generated during the kinematic motion. Blue: weight - Red: momentum forces - Black: foot-to-ground forces - Green: ground reaction forces.</em></p>
 
