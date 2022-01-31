@@ -3,7 +3,9 @@
 ![teaser](Docs/Images/teaser.jpg)
 
 - [Introduction](#Introduction)
-- [Force Model for Feet-to-Ground Contact](#Force)
+- [Real-time Terrain Deformation](#Terrain)
+- [Instructions](#Instructions)
+- [Results](#Results)
 - [Citation](#Citation)
 - [License](#License)
 
@@ -31,7 +33,7 @@ In order to reproduce two-ways interactions between the model and the environmen
 <p align="center"><em>Figure 1: Examples of footprints caused by different character morphologies in various ground types, such as snow or sand.</em></p>
 
 <a name="Force"></a>
-## Force Model for Feet-to-Ground Contact
+## Real-time Terrain Deformation
 
 We propose a model for the forces that the character applies to the ground when its feet are in contact with it, based on its kinematics and the nature of the ground. The resulting interaction forces over time are used to compute a plausible ground deformation.
 
@@ -44,14 +46,32 @@ The static forces that the model exerts on the ground are estimated based on the
 
 Finally, we use a linear plastic model for terrain compression along with a ray-casting method to map the estimated forces into the respective ground deformation. Parameters such as the Young Modulus of Elasticity *E* or Poisson ratio *ν* can be modified to change the behavior of the terrain under deformation.
 
-<a name="Citation"></a>
+<a name="Instructions"></a>
+## Instructions
 
+*In progress*
+
+<a name="Results"></a>
+## Results
+
+<p align="center">
+  <img src="Docs/Gifs/basic-footprints.gif" width="60%">
+</p>
+
+<p align="center">
+  <img src="Docs/Gifs/soils.jpg" width="60%">
+</p>
+
+<p align="center">
+  <img src="Docs/Gifs/quad.gif" width="60%">
+</p>
+
+<a name="Citation"></a>
 ## Citation
 
 *In progress*
 
 <a name="License"></a>
-
 ## License
 
 The code is released under MIT License. See LICENSE for details.
