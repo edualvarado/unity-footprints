@@ -51,7 +51,25 @@ Finally, we use a linear plastic model for terrain compression along with a ray-
 <a name="Instructions"></a>
 ## Instructions
 
-*In progress*
+The repository contains all the necessary assets to run the project without additional material. The last version has been tested on the **Unity version 2020.3.21f1**. Inside the `Assets`, the following structure is introduced:
+
+    .
+    ├── ...
+    ├── Assets 
+    │   ├── ...		
+    │   ├── Materials		# Materials used for models/grounds
+    │   ├── Models 		# Character models containing animation clips, state-machines or rigs
+	├── Scenes		# Scenes ready-to-use
+	├── Scripts 		# .cs scripts for terrain deformation
+	├── Terrain Data	# Data files corresponding to terrain heightmaps
+	├── Textures		# Textures used for models/grounds
+    │   └── ...                
+    ├── Docs
+    ├── ...				
+    ├── README.md
+    └── LICENSE
+
+To start: 
 
 <a name="Results"></a>
 ## Results
