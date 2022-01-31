@@ -57,15 +57,15 @@ Finally, we use a linear plastic model for terrain compression along with a ray-
 ## Results
 
 <p align="center">
-  <img src="Docs/Gifs/basic-footprints.gif" width="60%">
-</p>
-
-<p align="center">
   <img src="Docs/Images/terrains.png" width="100%">
 </p>
 
 <p align="center">
   <img src="Docs/Gifs/quad.gif" width="60%">
+</p>
+
+<p align="center">
+  <img src="Docs/Gifs/basic-footprints.gif" width="60%">
 </p>
 
 <a name="Citation"></a>
