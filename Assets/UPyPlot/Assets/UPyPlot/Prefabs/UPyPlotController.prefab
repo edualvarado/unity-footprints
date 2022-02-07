@@ -43,7 +43,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c4de270385a33143af63ff8a11b05f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  plotFileName: plot.txt
-  precision: 2
+  plotFileName: all_forces_walking_gait_v2.txt
+  precision: 3
   interval: 0.1
-  maxSamples: 25
+  maxSamples: 1000

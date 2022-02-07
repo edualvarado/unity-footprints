@@ -3,8 +3,8 @@
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
    * Date: Created by LIX on 01/08/2021
-   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
-   * Last update: 28/07/2021
+   * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
+   * Last update: 07/02/2022
 *****************************************************/
 
 using System;
@@ -17,9 +17,29 @@ using UnityEngine;
 /// </summary>
 public class TerrainMaster : MonoBehaviour
 {
-    #region Variables
+    #region Instance Fields
 
-    [Header("Terrain Info")]
+    [Header("Debug Terrain")]
+    public bool showTerrainNormalAngleDebug;
+
+    [Header("Modify Terrain")]
+    public bool printFeetPositionsHeightmapWorld;
+    public bool getFeetPositions = false;
+    //public bool getFeetSensors = false;
+
+    #endregion
+
+    #region Instance Properties
+
+    public TerrainData TerrainData { get; set; }
+    public int HeightmapWidth { get; set; }
+    public int HeightmapHeight { get; set; }
+    public float SlopeAngle { get; set; }
+
+    #endregion
+
+    #region Read-only & Static Fields
+
     private float slopeAngle;
     private Terrain terrain;
     private TerrainData terrainData;
@@ -31,27 +51,16 @@ public class TerrainMaster : MonoBehaviour
     private int[,] contourmapData;
     private int[,] contourmapBuffer;
 
-    public TerrainData TerrainData { get; set; }
-    public int HeightmapWidth { get; set; }
-    public int HeightmapHeight { get; set; }
-    public float SlopeAngle { get; set; }
-
-    [Header("Debug Terrain")]
-    public bool showTerrainNormalAngleDebug;
-
-    [Header("Modify Terrain")]
-    public bool printFeetPositionsHeightmapWorld;
-    public bool getFeetPositions = false;
-    //public bool getFeetSensors = false;
-
     private IKFeetPlacement _feetPlacement = null;
     private Rigidbody _rb = null;
 
     #endregion
 
+    #region Unity Methods
+
     void Awake()
     {
-        // Get terrain information.
+        // Get terrain information
         if (!terrain)
             terrain = Terrain.activeTerrain;
 
@@ -66,17 +75,12 @@ public class TerrainMaster : MonoBehaviour
         contourmapBuffer = new int[heightmapHeight, heightmapWidth];
     }
 
-    // Start is called before the first frame update
     void Start()
     {
-        // From same GameObject
         _rb = GetComponent<Rigidbody>();
-
-        // From other GameObject
         _feetPlacement = FindObjectOfType<IKFeetPlacement>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         // Get angle at each frame
@@ -87,18 +91,11 @@ public class TerrainMaster : MonoBehaviour
             ObtainFeetPositions(_feetPlacement.LeftFootIKPosition);
             ObtainFeetPositions(_feetPlacement.RightFootIKPosition);
         }
-
-        //if(getFeetSensors)
-        //{
-        //    DetectFeetOnFloor(_feetPlacement.LeftFootIKPosition);
-        //    DetectFeetOnFloor(_feetPlacement.RightFootIKPosition);
-        //}
     }
 
-    //private void DetectFeetOnFloor(Vector3 footIKPosition)
-    //{
-    //    Vector3 hitFeet = Vector3.zero;
-    //}
+    #endregion
+
+    #region Instance Methods
 
     /// <summary>
     /// Gets Terrain Slope angle (sign changes if going up or down).
@@ -133,8 +130,10 @@ public class TerrainMaster : MonoBehaviour
 
         if (printFeetPositionsHeightmapWorld)
         {
-            Debug.Log("indX_heightmap: " + indX_heightmap + " | indZ_heightmap: " + indZ_heightmap);
-            Debug.Log("indX_size: " + indX_size + " | indZ_size: " + indZ_size);
+            Debug.Log("[INFO] indX_heightmap: " + indX_heightmap + " | indZ_heightmap: " + indZ_heightmap);
+            Debug.Log("[INFO] indX_size: " + indX_size + " | indZ_size: " + indZ_size);
         }
     }
+
+    #endregion
 }

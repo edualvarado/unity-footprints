@@ -2,8 +2,9 @@
  * File: BrushPhysicalFootprint.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
-   * Date: Created by LIX on 27/10/2021
+   * Date: Created by LIX on 01/08/2021
    * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
+   * Last update: 07/02/2022
 *****************************************************/
 
 using UnityEngine;
@@ -14,7 +15,7 @@ using UnityEngine.UI;
 /// </summary>
 abstract public class BrushPhysicalFootprint : MonoBehaviour
 {
-    #region Variables
+    #region Instance Fields
 
     private bool active = false;
 
@@ -69,7 +70,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #endregion
 
-    #region Body Properties
+    #region Instance Properties - Body
 
     public float Mass
     {
@@ -99,7 +100,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #endregion
 
-    #region Material Properties
+    #region Instance Properties - Materials
 
     public bool ActivateBump
     {
@@ -124,7 +125,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #endregion
 
-    #region Terrain Properties
+    #region Instance Properties - Terrain
 
     public Vector3 TerrainSize
     {
@@ -139,7 +140,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #endregion
 
-    #region Forces and Physics
+    #region Instance Properties - Forces
     public float MinTotalForceLeftFootZNorm
     {
         get { return minTotalForceLeftFootZNorm; }
@@ -208,7 +209,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #endregion
 
-    #region Character
+    #region Instance Properties - Character
 
     public Vector3 CenterGridLeftFootHeight
     {
@@ -228,7 +229,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
 
     #endregion
 
-    #region Other Properties
+    #region Instance Properties - Others
 
     public sourceDeformation DeformationChoice
     {
@@ -285,6 +286,8 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     }
 
     #endregion
+
+    #region Unity Methods
 
     void Start()
     {
@@ -350,6 +353,10 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
         ActivateToggleShowBump = terrain.activateToggleShowBump;
     }
 
+    #endregion
+
+    #region Instance Methods
+
     public void Deactivate()
     {
         if (active)
@@ -388,4 +395,6 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     // Abstract = incomplete implementation that will be fullfiled in the child class (TerrainBrush)
     public abstract void DrawFootprint(float xLeft, float zLeft, float xRight, float zRight);
     public abstract void DrawFootprint(int xLeft, int zLeft, int xRight, int zRight);
+
+    #endregion
 }

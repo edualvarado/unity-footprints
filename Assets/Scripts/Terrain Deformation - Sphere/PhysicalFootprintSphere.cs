@@ -3,8 +3,11 @@
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
    * Date: Created by LIX on 01/08/2021
-   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+   * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
+   * Last update: 07/02/2022
 *****************************************************/
+
+/* Code can be not updated */
 
 using System;
 using System.Collections;
