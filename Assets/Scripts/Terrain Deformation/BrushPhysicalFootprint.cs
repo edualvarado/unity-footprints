@@ -141,6 +141,7 @@ abstract public class BrushPhysicalFootprint : MonoBehaviour
     #endregion
 
     #region Instance Properties - Forces
+
     public float MinTotalForceLeftFootZNorm
     {
         get { return minTotalForceLeftFootZNorm; }

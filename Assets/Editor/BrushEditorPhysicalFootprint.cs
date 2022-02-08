@@ -13,7 +13,6 @@ using UnityEngine;
 using UnityEditor;
 
 [CustomEditor(typeof(BrushPhysicalFootprint), true)]
-
 public class BrushEditorPhysicalFootprint : Editor
 {
     #region Read-only & Static Fields
@@ -27,30 +26,30 @@ public class BrushEditorPhysicalFootprint : Editor
 
     public override void OnInspectorGUI()
 	{
-		BrushPhysicalFootprint myBrush = (BrushPhysicalFootprint)target;
+        BrushPhysicalFootprint myBrush = (BrushPhysicalFootprint)target;
 
-		// To start brush by default
-		if (!myBrush.IsActive() && Application.isPlaying)
+        // To start brush by default
+        if (!myBrush.IsActive() && Application.isPlaying)
         {
-			myBrush.Toggle();
-		}
+            myBrush.Toggle();
+        }
 
-		if (myBrush.IsActive())
-			DrawDefaultInspector();
+        if (myBrush.IsActive())
+            DrawDefaultInspector();
 
-		if (ToggleButtonStyleNormal == null)
-		{
-			ToggleButtonStyleNormal = "Button";
-			ToggleButtonStyleToggled = new GUIStyle(ToggleButtonStyleNormal);
-			ToggleButtonStyleToggled.normal.background = ToggleButtonStyleToggled.active.background;
-		}
+        if (ToggleButtonStyleNormal == null)
+        {
+            ToggleButtonStyleNormal = "Button";
+            ToggleButtonStyleToggled = new GUIStyle(ToggleButtonStyleNormal);
+            ToggleButtonStyleToggled.normal.background = ToggleButtonStyleToggled.active.background;
+        }
 
-		GUIStyle style = myBrush.IsActive() ? ToggleButtonStyleToggled : ToggleButtonStyleNormal;
-		if (GUILayout.Button("Use", style))
-		{
-			myBrush.Toggle();
-		}
-	}
+        GUIStyle style = myBrush.IsActive() ? ToggleButtonStyleToggled : ToggleButtonStyleNormal;
+        if (GUILayout.Button("Use", style))
+        {
+            myBrush.Toggle();
+        }
+    }
 
-    #endregion
+	#endregion
 }

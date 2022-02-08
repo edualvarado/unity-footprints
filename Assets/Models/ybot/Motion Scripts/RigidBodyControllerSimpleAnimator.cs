@@ -15,6 +15,9 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
 {
     #region Instance Fields
 
+    [Header("Input - Options")]
+    public bool joystickMode = true;
+
     [Header("Motion Options")]
     public Transform rootKinematicSkeleton;
     public Vector3 moveDirection;
@@ -73,9 +76,6 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
     private Animator _anim;
     private TerrainMaster _terrain;
 
-    private float timeElapsedRun = 0f;
-    private float timeElapsedWalk = 0f;
-
     #endregion
 
     #region Unity Methods
@@ -88,9 +88,6 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
 
         // Set COM for lower-body into the hips
         _rb.centerOfMass = rootKinematicSkeleton.localPosition;
-
-        // For running with keyboard
-        timeElapsedWalk = 1f;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -115,7 +112,7 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
         {
             // Change speed based on slope - 30f in InverseLerp could be externalized
             float t = Mathf.InverseLerp(0f, 30f, slopeAngle);
-            _anim.SetFloat("speedAnimation", Mathf.Lerp(1f, 0.75f, t), 0.0f, Time.deltaTime);
+            _anim.SetFloat("SpeedAnimation", Mathf.Lerp(1f, 0.75f, t), 0.0f, Time.deltaTime);
         }
 
         #endregion
@@ -193,58 +190,48 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
 
         #region Animation Controller
 
-        if (_inputs != Vector3.zero)
-        {
-            _anim.SetBool("isWalking", true);
-        }
-        else
-        {
-            _anim.SetBool("isWalking", false);
-        }
-
+        _anim.SetBool("JoystickMode", joystickMode);
         _anim.SetFloat("InputX", _inputs.x, 0.0f, Time.deltaTime);
         _anim.SetFloat("InputZ", _inputs.z, 0.0f, Time.deltaTime);
 
         inputMagnitude = _inputs.sqrMagnitude;
 
-        // For running with keyboard
-        if ((!Input.GetKey(KeyCode.Space)) && inputMagnitude > 0.5f)
+        if (!joystickMode)
         {
-            inputMagnitude = 0.5f;
-
-            if (timeElapsedWalk < 0.8f)
+            if (_inputs != Vector3.zero)
             {
-                inputMagnitude = Mathf.Lerp(1f, 0.5f, timeElapsedWalk / 0.8f);
-                timeElapsedWalk += Time.deltaTime;
-            }
+                _anim.SetBool("isWalking", true);
 
-            timeElapsedRun = 0f;
+                if (Input.GetKey(KeyCode.Space))
+                    _anim.SetBool("isRunning", true);
+                else
+                    _anim.SetBool("isRunning", false);
+            }
+            else
+            {
+                _anim.SetBool("isWalking", false);
+            }
         }
-        else if ((Input.GetKey(KeyCode.Space)) && inputMagnitude > 0.5f)
+        else
         {
-            if (timeElapsedRun < 0.8f)
-            {
-                inputMagnitude = Mathf.Lerp(0.5f, 1f, timeElapsedRun / 0.8f);
-                timeElapsedRun += Time.deltaTime;
-            }
-
-            timeElapsedWalk = 0f;
+            _anim.SetFloat("InputMagnitude", inputMagnitude, 0.0f, Time.deltaTime);
+            _anim.SetFloat("SpeedAnimation", speedAnimation, 0.0f, Time.deltaTime);
         }
 
         _anim.SetFloat("InputMagnitude", inputMagnitude, 0.0f, Time.deltaTime);
 
-        // By changing speedAnimation, makes the corresponding change in the animation
+        // By changing SpeedAnimation, makes the corresponding change in the animation
         if (motion == motionMode.applyTransformPosition)
         {
-            _anim.SetFloat("speedAnimation", (speedTransform * animationMultiplier), 0.0f, Time.deltaTime);
+            _anim.SetFloat("SpeedAnimation", (speedTransform * animationMultiplier), 0.0f, Time.deltaTime);
         }
         else if ((motion == motionMode.applyExperimental))
         {
-            _anim.SetFloat("speedAnimation", (speedRigidBody * animationMultiplier), 0.0f, Time.deltaTime);
+            _anim.SetFloat("SpeedAnimation", (speedRigidBody * animationMultiplier), 0.0f, Time.deltaTime);
         }
         else if (motion == motionMode.applyRootMotion)
         {
-            _anim.SetFloat("speedAnimation", speedAnimation, 0.0f, Time.deltaTime);
+            _anim.SetFloat("SpeedAnimation", speedAnimation, 0.0f, Time.deltaTime);
         }
 
         // Jump
@@ -319,7 +306,7 @@ public class RigidBodyControllerSimpleAnimator : MonoBehaviour
         // In case there is friction that slows down the rigid body, we change the animation by the actual velocity
         if(motion == motionMode.applyRigidBodyVelocity)
         {
-            _anim.SetFloat("speedAnimation", (_rb.velocity.sqrMagnitude * animationMultiplier), 0.0f, Time.deltaTime);
+            _anim.SetFloat("SpeedAnimation", (_rb.velocity.sqrMagnitude * animationMultiplier), 0.0f, Time.deltaTime);
         }
     }
 

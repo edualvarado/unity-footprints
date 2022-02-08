@@ -50,7 +50,7 @@ Animator:
   m_GameObject: {fileID: 331153741591160939}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: a8532d6a497909943ab5dde6577673f0, type: 3}
-  m_Controller: {fileID: 9100000, guid: 9576b7c02ab15464a9e82a37a2793ff8, type: 2}
+  m_Controller: {fileID: 9100000, guid: 7712f0200b4237b458279653c6ab7c8b, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 1
   m_ApplyRootMotion: 1
@@ -101,6 +101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3fbc5771d96cdc846b3dadc3fd6a92fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  joystickMode: 0
   rootKinematicSkeleton: {fileID: 4865010142777381445}
   moveDirection: {x: 0, y: 0, z: 0}
   _inputs: {x: 0, y: 0, z: 0}
