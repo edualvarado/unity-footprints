@@ -2,8 +2,9 @@
  * File: TerrainBrushPhysicalFootprint.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
-   * Date: Created by LIX on 27/10/2021
+   * Date: Created by LIX on 01/08/2021
    * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
+   * Last update: 07/02/2022
 *****************************************************/
 
 using System.Collections;
@@ -15,6 +16,8 @@ using UnityEngine;
 /// </summary>
 public abstract class TerrainBrushPhysicalFootprint : BrushPhysicalFootprint
 {
+    #region Instance Methods
+
     public override void CallFootprint(float xLeft, float zLeft, float xRight, float zRight)
     {
         // 1. Pass the positions though here to convert them wrt Heightmap before calling final brush
@@ -32,4 +35,6 @@ public abstract class TerrainBrushPhysicalFootprint : BrushPhysicalFootprint
     {
         DrawFootprint((int)xLeft, (int)zLeft, (int)xRight, (int)zRight);
     }
+
+    #endregion
 }

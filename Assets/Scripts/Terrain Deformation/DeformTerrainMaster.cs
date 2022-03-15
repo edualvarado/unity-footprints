@@ -2,8 +2,9 @@
  * File: DeformTerrainMaster.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
-   * Date: Created by LIX on 27/10/2021
+   * Date: Created by LIX on 01/08/2021
    * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
+   * Last update: 07/02/2022
 *****************************************************/
 
 using System;
@@ -24,7 +25,7 @@ public enum sourceDeformation
 /// </summary>
 public class DeformTerrainMaster : MonoBehaviour
 {
-    #region Variables
+    #region Instance Fields
 
     [Header("Bipedal - (SET UP)")]
     [Tooltip("Your character GameObject")]
@@ -46,7 +47,7 @@ public class DeformTerrainMaster : MonoBehaviour
     [Tooltip("Time that the terrain requires to absorve the force from the hitting foot. More time results in a smaller require force. On the other hand, for less time, the terrain requires a larger force to stop the foot.")]
     public float contactTime = 0.1f;
     [Tooltip("Small delay, sometimes needed, to give the system enough time to perform the deformation.")]
-    private float offset = 0.5f;
+    private float offset = 0.2f; // 0.5f
 
     [Header("Terrain Prefabs - Settings - (SET UP)")]
     [Space(10)]
@@ -156,6 +157,10 @@ public class DeformTerrainMaster : MonoBehaviour
     public Toggle activateToggleShowBump;
     public Toggle activateToggleShowForceModel;
 
+    #endregion
+
+    #region Read-only & Static Fields
+
     // Types of brushes
     private BrushPhysicalFootprint brushPhysicalFootprint;
 
@@ -173,6 +178,8 @@ public class DeformTerrainMaster : MonoBehaviour
     // Additional
     private bool oldIsMoving = false;
     private bool isMoving = false;
+    private bool oldIsJumping = false;
+    private bool isJumping = false;
     private int provCounter = 0;
 
     #endregion
@@ -205,7 +212,8 @@ public class DeformTerrainMaster : MonoBehaviour
 
     #endregion
 
-    // Start is called before the first frame update
+    #region Unity Methods
+
     void Start()
     {
         // 1. Extract terrain information
@@ -236,15 +244,13 @@ public class DeformTerrainMaster : MonoBehaviour
         // Old Feet Y-component position
         oldIKLeftPosition = _anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
         oldIKRightPosition = _anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+        
         oldIsMoving = _anim.GetBool("isWalking");
+        oldIsJumping = _anim.GetBool("isJumping"); // NEW
     }
 
-    // Update is called once per frame
     void Update()
     {
-        //       Initial Information       //
-        // =============================== //
-
         // 1. Define source of deformation where we are
         DefineSourceDeformation();
 
@@ -260,27 +266,30 @@ public class DeformTerrainMaster : MonoBehaviour
         // Quadrupeds Information //
         /////////// TODO ///////////
 
-        // =============================== //
-
         // 5. Print feet and force information if wished
         DebugForceModel();
-
-        //       Applying Deformation       //
-        // ================================ //
 
         // 6. Apply procedural brush to deform the terrain based on the force model
         ApplyDeformation();
     }
 
-    #region Update Methods
+    public void FixedUpdate()
+    {
+        // 1. Calculate Velocity for the feet
+        CalculateFeetVelocity();
+    }
+
+    #endregion
+
+    #region Instance Methods
 
     private void ApplyDeformation()
     {
         // A. Apply brush to feet
         if (brushPhysicalFootprint)
         {
-            // Brush is only called if we are within the contactTime.
-            // Due to the small values, the provisional solution requires to add an offset to give the system enough time to create the footprint.
+            // Brush is only called if we are within the contactTime
+            // Due to the small values, the provisional solution requires to add an offset to give the system enough time to create the footprint
             timePassed += Time.deltaTime;
             if (timePassed <= contactTime + offset)
             {
@@ -290,26 +299,34 @@ public class DeformTerrainMaster : MonoBehaviour
             }
         }
 
-        // B. Provisional: We reset the time passed everytime when we lift the feet.
-        // Not very accurate, it would be better to create a time variable per feet and pass it though the method.
-        if ((!isLeftFootGrounded || !isRightFootGrounded) && isMoving)
+        // B. Provisional: We reset the time passed everytime when we lift the feet
+        // Not very accurate, it would be better to create a time variable per feet and pass it though the method
+        if ((!isLeftFootGrounded || !isRightFootGrounded) && (isMoving || isJumping))
         {
             timePassed = 0f;
         }
 
         // C. Provisional: When is still (once) - Stopping when reaching the deformation required was not giving very good results -> TODO: Improve!
-        if (!isMoving && (!isLeftFootGrounded || !isRightFootGrounded) && provCounter <= 3)
+        if ((!isMoving || !isJumping) && (!isLeftFootGrounded || !isRightFootGrounded) && provCounter <= 3)
         {
             timePassed = 0f;
             provCounter += 1;
         }
 
-        // D. Provisional: Each time I change motion, resets the time.
+        // D. Provisional: Each time I change motion, resets the time
         isMoving = _anim.GetBool("isWalking");
         if (isMoving != oldIsMoving)
         {
             timePassed = 0f;
             oldIsMoving = isMoving;
+            provCounter = 0;
+        }
+
+        isJumping = _anim.GetBool("isJumping"); // NEW
+        if (isJumping != oldIsJumping)
+        {
+            timePassed = 0f;
+            oldIsJumping = isJumping;
             provCounter = 0;
         }
     }
@@ -376,6 +393,12 @@ public class DeformTerrainMaster : MonoBehaviour
 
         if (brushPhysicalFootprint)
         {
+            if (!isRightFootGrounded && !isLeftFootGrounded) // NEW
+            {
+                weightInLeftFoot = 0f;
+                weightInRightFoot = 0f;
+            }
+
             // B. Weight Forces - Negative Y-component
             weightForce = mass * (Physics.gravity);
             weightForceLeft = weightForce * (weightInLeftFoot);
@@ -389,7 +412,7 @@ public class DeformTerrainMaster : MonoBehaviour
             // ============================================= //
 
             // Weight Force is already zero if the foot is not grounded - however, we draw only when foot is grounded
-            if (drawWeightForces && !isMoving)
+            if (drawWeightForces && (!isMoving || !isJumping))
             {
                 DrawForce.ForDebug3D(centerGridLeftFootHeight, weightForceLeft, Color.blue, 0.0025f);
                 DrawForce.ForDebug3D(centerGridRightFootHeight, weightForceRight, Color.blue, 0.0025f);
@@ -420,9 +443,13 @@ public class DeformTerrainMaster : MonoBehaviour
             //////////////////////////
 
             if (feetSpeedLeft.y <= 0f)
+            {
                 feetImpulseLeft = mass * weightInLeftFoot * (Vector3.zero - feetSpeedLeft);
+            }
             else
+            {
                 feetImpulseLeft = Vector3.zero;
+            }
 
             if (feetSpeedRight.y <= 0f)
                 feetImpulseRight = mass * weightInRightFoot * (Vector3.zero - feetSpeedRight);
@@ -453,12 +480,12 @@ public class DeformTerrainMaster : MonoBehaviour
             // ===================================================================== //
 
             // Momentum Forces are created when we hit the ground (that is, when such forces are positive in y, and the feet are grounded)
-            if (drawMomentumForces && isMoving && isLeftFootGrounded)
+            if (drawMomentumForces && (isMoving || isJumping) && isLeftFootGrounded)
             {
                 DrawForce.ForDebug3D(centerGridLeftFootHeight, -momentumForceLeft, Color.red, 0.0025f);
             }
 
-            if (drawMomentumForces && isMoving && isRightFootGrounded)
+            if (drawMomentumForces && (isMoving || isJumping) && isRightFootGrounded)
             {
                 DrawForce.ForDebug3D(centerGridRightFootHeight, -momentumForceRight, Color.red, 0.0025f);
             }
@@ -481,7 +508,7 @@ public class DeformTerrainMaster : MonoBehaviour
             Color darkGreen = new Color(0.074f, 0.635f, 0.062f, 1f);
 
             // GRF is already zero if the foot is not grounded - however, we draw only when foot is grounded
-            if (drawGRForces && !isMoving)
+            if (drawGRForces && (!isMoving || !isJumping))
             {
                 DrawForce.ForDebug3D(centerGridLeftFootHeight, totalGRForceLeft, darkGreen, 0.0025f);
                 DrawForce.ForDebug3D(centerGridRightFootHeight, totalGRForceRight, darkGreen, 0.0025f);
@@ -562,7 +589,7 @@ public class DeformTerrainMaster : MonoBehaviour
             // Feet Forces are created when we hit the ground (that is, when the Y-component of the Momentum Force is positive)
             // Only when the feet rise up, Feet Forces do not exist. The muscle is the responsable to lift the foot up
             // Also, the foot must be grounded to have a Feet Force actuating onto the ground
-            if (drawFeetForces && !isMoving)
+            if (drawFeetForces && (!isMoving || !isJumping))
             {
                 DrawForce.ForDebug3D(centerGridLeftFootHeight, totalForceLeftFoot, Color.black, 0.0025f);
                 DrawForce.ForDebug3D(centerGridRightFootHeight, totalForceRightFoot, Color.black, 0.0025f);
@@ -659,16 +686,6 @@ public class DeformTerrainMaster : MonoBehaviour
                 break;
         }
     }
-
-    #endregion
-
-    public void FixedUpdate()
-    {
-        // 1. Calculate Velocity for the feet
-        CalculateFeetVelocity();
-    }
-
-    #region Fixed Update Methods
 
     private void CalculateFeetVelocity()
     {
@@ -774,9 +791,6 @@ public class DeformTerrainMaster : MonoBehaviour
 
     #endregion
 
-    //      Getters       //
-    // ================== //
-
     #region Getters
 
     public Vector3 Get3(int x, int z)
@@ -866,9 +880,6 @@ public class DeformTerrainMaster : MonoBehaviour
 
     #endregion
 
-    //      Setters       //
-    // ================== //
-
     #region Setters
 
     // Given one node of the heightmap, set the height
@@ -885,9 +896,6 @@ public class DeformTerrainMaster : MonoBehaviour
     }
 
     #endregion
-
-    //      Terrain Methods       //
-    // ========================== //
 
     #region Terrain Methods
 

@@ -3,7 +3,8 @@
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
    * Date: Created by LIX on 01/08/2021
-   * Project: Physically-driven Footprints Generation for Real-Time Interactions between a Character and Deformable Terrains
+   * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
+   * Last update: 07/02/2022
 *****************************************************/
 
 using System;
@@ -15,6 +16,8 @@ using System.Collections;
 /// </summary>
 public static class DrawForce
 {
+    #region Instance Methods
+
     public static void ForGizmo(Vector3 pos, Vector3 direction, float arrowLength, float lengthMultiplier = 1f, float arrowHeadLength = 0.25f, float arrowHeadAngle = 20.0f)
     {
         Gizmos.DrawRay(pos, direction * Math.Abs(arrowLength) * lengthMultiplier);
@@ -52,6 +55,7 @@ public static class DrawForce
         Debug.DrawRay(pos + (direction * arrowLength * lengthMultiplier), right * arrowHeadLength);
         Debug.DrawRay(pos + (direction * arrowLength * lengthMultiplier), left * arrowHeadLength);
     }
+
     public static void ForDebug(Vector3 pos, float arrowLength, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
     {
         Vector3 direction;
@@ -81,12 +85,13 @@ public static class DrawForce
             Debug.DrawRay(pos + (direction * lengthMultiplier), left * arrowHeadLength);
         }
     }
+
     public static void ForDebug3D(Vector3 pos, Vector3 direction, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
     {
         float reduce = 0.5f;
         //float reduce = 1f;
 
-        pos = pos + new Vector3(0.5f, 0, 0);
+        pos = pos + new Vector3(0f, 0, 0);
 
         if (direction != Vector3.zero)
         {
@@ -98,6 +103,7 @@ public static class DrawForce
             Debug.DrawRay(pos + (reduce * direction * lengthMultiplier), left * arrowHeadLength, color);
         }
     }
+
     public static void ForDebug3DVelocity(Vector3 pos, Vector3 direction, Color color, float lengthMultiplier = 1f, float arrowHeadLength = 0.05f, float arrowHeadAngle = 20.0f)
     {
         float reduce = 0.5f;
@@ -114,4 +120,6 @@ public static class DrawForce
             Debug.DrawRay(pos + (reduce * direction * lengthMultiplier), left * arrowHeadLength, color);
         }
     }
+
+    #endregion
 }

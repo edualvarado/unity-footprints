@@ -1,15 +1,15 @@
 ﻿/****************************************************
- * File: BrushPhysicalFootprint.cs
+ * File: PhysicalFootprint.cs
    * Author: Eduardo Alvarado
    * Email: eduardo.alvarado-pinero@polytechnique.edu
-   * Date: Created by LIX on 27/10/2021
+   * Date: Created by LIX on 01/08/2021
    * Project: Real-Time Locomotion on Soft Grounds with Dynamic Footprints
+   * Last update: 07/02/2022
 *****************************************************/
 
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 
 /// <summary>
 /// Brush to create dynamic footprints on the heighmap terrain. 
@@ -18,7 +18,7 @@ using UnityEngine;
 /// </summary>
 public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 {
-    #region Variables
+    #region Instance Fields
 
     [Header("Physically-based Footprints Deformation - (SET UP)")]
     public bool applyFootprints = false;
@@ -91,7 +91,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     private float oldAreaTotalLeft = 0f;
     private float oldAreaTotalRight = 0f;
 
-
     [Header("Terrain Deformation - Pressure")]
     [Space(20)]
     public float pressureStress;
@@ -132,7 +131,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     public double volumeCellLeft; // Volume/cell distributed over countour
     public double volumeCellRight; // Volume/cell distributed over countour
 
-    // NEW Modulated Bump
+    // TEST - Modulated Bump
     [Header("New - Modulated Bump")]
     [Space(20)]
     [HideInInspector] public float weightCellLeft; // Weights created between 0 and 1
@@ -152,6 +151,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     private float dLeft; // Distance to a cell
     private float dRight;
     private float weightMult = 0.2f;
+
+    #endregion
+
+    #region Read-only & Static Fields
 
     // Force for bump
     private Vector3 forcePositionLeft;
@@ -173,6 +176,8 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
 
     #endregion
 
+    #region Instance Methods
+
     /// <summary>
     /// Method that takes the IK positions for each feet and apply displacement to ground.
     /// </summary>
@@ -182,9 +187,7 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
     /// <param name="zRight"></param>
     public override void DrawFootprint(int xLeft, int zLeft, int xRight, int zRight)
     {
-
-        //       Initial Declarations      //
-        // =============================== //
+        #region Initial Declarations
 
         // 1. If activated, takes the prefab information from the master script
         if (DeformationChoice == sourceDeformation.useTerrainPrefabs)
@@ -246,7 +249,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         float[,] weightsBumpLeftInit = new float[2 * gridSize + 1, 2 * gridSize + 1];
         float[,] weightsBumpRightInit = new float[2 * gridSize + 1, 2 * gridSize + 1];
 
-        // ====================== //
+        #endregion
+
+        #region Terrain Declaration
 
         // Warning: Supossing that terrain is squared!
         if (printTerrainInformation)
@@ -264,8 +269,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         lenghtCellZ = terrain.TerrainSize().z / (terrain.GridSize().z - 1);
         areaCell = lenghtCellX * lenghtCellZ;
 
-        //    Contact Area Calculation     //
-        // =============================== //
+        #endregion
+
+        #region Contact Area Calculation
 
         // 2D iteration for both feet
         // 1. It counts the number of hits, save the classified cell in a list and debug ray-casting
@@ -360,8 +366,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         // Total Area and Volume for both feet
         areaTotal = areaTotalLeft + areaTotalRight;
 
-        //        Detecting Contour        //
-        // =============================== //
+        #endregion
+
+        #region Detecting Contour
 
         if (IsRightFootGrounded)
         {
@@ -518,9 +525,8 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             }
         }
 
-        //
+        #endregion
 
-        // === Modulated Bump === //
         #region Modulated Bump
 
         /*
@@ -762,12 +768,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         }
         */
 
-        // ====================== //
-
         #endregion
 
-        // Front/Back classification - Not used
         #region Front/Back
+
         /*
         // 2. Calculating number of neightbouring hits to later get the area
         for (int zi = -gridSize + offsetBumpGrid; zi <= gridSize - offsetBumpGrid; zi++)
@@ -864,7 +868,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             }
         }
         */
+
         #endregion
+
+        #region Neighbour Area Calculation
 
         // 3. Calculate the neightbour area for each foot
         oldNeighbourAreaTotalLeft = ((neighbourCellsLeft) * areaCell);
@@ -881,8 +888,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             neighbourAreaTotalRight = ((neighbourCellsRight) * areaCell);
         }
 
-        //       Physics Calculation       //
-        // =============================== //
+        #endregion
+
+        #region Physics Calculation
 
         // 1. Calculate Pressure applicable per frame - if no contact, there is no pressure
         // The three values should be similar, since pressure is based on the contact area
@@ -905,9 +913,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         else
             pressureStress = (TotalForceY) / areaTotal;
 
+        #endregion
 
-        //     Deformation Calculation     //
-        // =============================== //
+        #region Deformation Calculation
 
         // 1. Given area, pressure and terrain parameters, we calculate the displacement on the terrain
         // The decrement will depend also on the ContactTime used to calculate the corresponding force
@@ -961,8 +969,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         bumpDisplacementLeft = (Time.deltaTime * (float)bumpHeightDeformationLeft) / ContactTime;
         bumpDisplacementRight = (Time.deltaTime * (float)bumpHeightDeformationRight) / ContactTime;
 
-        //     Physics+ Calculation     //
-        // =============================== //
+        #endregion
+
+        #region Physics+ Calculation
 
         // Strains (compression) - Info
         strainLong = -(heightCellDisplacementYoungRight) / originalLengthZero;
@@ -972,8 +981,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         volumeVariationPoissonLeft = (1 - 2 * poissonR) * (-heightCellDisplacementYoungLeft / originalLengthZero) * volumeOriginalLeft; // NEGATIVE CHANGE
         volumeVariationPoissonRight = (1 - 2 * poissonR) * (-heightCellDisplacementYoungRight / originalLengthZero) * volumeOriginalRight;
 
-        //        Apply Deformation        //
-        // =============================== //
+        #endregion
+
+        #region Apply Deformation
 
         // 2D iteration Deformation
         // Once we have the displacement, we saved the actual result of applying it to the terrain (only when the foot is grounded)
@@ -998,10 +1008,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
             StopAllCoroutines();
         }
 
-        //         Apply Smoothing         //
-        // =============================== //
+        #endregion
 
-        #region Smoothing
+        #region Apply Smoothing
 
         // To solve the discontinuity problem, filter is applied after each terrain displacement per-frame, not at the end.
 
@@ -1262,8 +1271,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         yield return null;
     }
 
-    // Pre-filter Methods - Not used //
-    // ============================= //
+    #endregion
+
+    #region Pre-filter Methods - Not used
 
     private float[,] FilterBufferLeft(float[,] heightMapLeft, int[,] heightMapLeftBool)
     {
@@ -1331,8 +1341,9 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         return heightMapRightFiltered;
     }
 
-    // Post-filter Methods //
-    // =================== //
+    #endregion
+
+    #region Post-filter Methods
 
     // New-version Gaussian Blur (3x3) 
     public void NewFilterHeightMap(int x, int z, float[,] heightMap)
@@ -1395,6 +1406,10 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         return heightMapFiltered;
     }
 
+    #endregion
+
+    #region Barycentric Coordinates - Not used
+
     // TEST - Calculate Barycentric Coordinates Right
     /*
     private void computeBarycentricCoordinatesRight(Vector3 center, List<Vector3> neighboursPositionsRight)
@@ -1445,4 +1460,6 @@ public class PhysicalFootprint : TerrainBrushPhysicalFootprint
         return angleCot;
     }
     */
+
+    #endregion
 }
