@@ -26,9 +26,9 @@ In order to reproduce two-ways interactions between the model and the environmen
 </p>
 
 <p align="center">
-  <img src="Docs/Gifs/fairy-snow-running.gif" width="40%">
-&nbsp; &nbsp;
   <img src="Docs/Gifs/fairy-snow-walking.gif" width="40%">
+&nbsp; &nbsp;
+  <img src="Docs/Gifs/fairy-snow-running.gif" width="40%">
 </p>
 <p align="center"><em>Figure 1: Examples of footprints caused by different character morphologies in various ground types, such as snow or sand.</em></p>
 
