@@ -3,7 +3,7 @@ layout: default
 title: "Real-Time Locomotion on Soft Grounds with Dynamic Footprints"
 ---
 
-<center><h1>{{ page.title }}</h1></center>
+<center><h2>{{ page.title }}</h2></center>
 
 <td>
 	<center>
