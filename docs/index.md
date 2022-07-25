@@ -1,7 +1,9 @@
+<!-- 
 ---
 layout: default
 title: "Real-Time Locomotion on Soft Grounds with Dynamic Footprints"
----
+--- 
+-->
 
 <center><h2>{{ page.title }}</h2></center>
 
