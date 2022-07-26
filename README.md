@@ -137,7 +137,7 @@ urldate = {2022-04-05}
 
 - [Project Page](https://edualvarado.com/real-time-locomotion-on-soft-grounds/)
 - [Paper](https://hal.inria.fr/hal-03630136)
-- [Youtube Video](https://www.youtube.com/watch?v=aWBntnCOwEE)
+- [Video](https://www.youtube.com/watch?v=aWBntnCOwEE)
 
 <a name="License"></a>
 ## License
