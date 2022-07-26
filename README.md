@@ -7,6 +7,7 @@
 - [Instructions](#Instructions)
 - [Results](#Results)
 - [Citation](#Citation)
+- [Links](#Links)
 - [License](#License)
 
 
@@ -131,6 +132,12 @@ url = {https://hal.inria.fr/hal-03630136},
 urldate = {2022-04-05}
 }
 ```
+<a name="Links"></a>
+## Links
+
+- [Project Page](https://edualvarado.com/real-time-locomotion-on-soft-grounds/)
+- [Paper](https://hal.inria.fr/hal-03630136)
+- [Youtube Video](https://www.youtube.com/watch?v=aWBntnCOwEE)
 
 <a name="License"></a>
 ## License
