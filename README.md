@@ -116,16 +116,19 @@ In the folder `Scenes`, you can find the scene `Terrain Deformation - Showcases`
 ## Citation
 
 ```bibtex
-@ARTICLE{10.3389/frvir.2022.801856,
-AUTHOR={Alvarado, Eduardo and Paliard , Chloé and Rohmer , Damien and Cani , Marie-Paule},    
-TITLE={Real-Time Locomotion on Soft Grounds With Dynamic Footprints},      
-JOURNAL={Frontiers in Virtual Reality},      
-VOLUME={3},      
-YEAR={2022},      
-URL={https://www.frontiersin.org/article/10.3389/frvir.2022.801856},       
-DOI={10.3389/frvir.2022.801856},      
-ISSN={2673-4192},   
-ABSTRACT={When we move on snow, sand, or mud, the ground deforms under our feet, immediately affecting our gait. We propose a physically based model for computing such interactions in real time, from only the kinematic motion of a virtual character. The force applied by each foot on the ground during contact is estimated from the weight of the character, its current balance, the foot speed at the time of contact, and the nature of the ground. We rely on a standard stress-strain relationship to compute the dynamic deformation of the soil under this force, where the amount of compression and lateral displacement of material are, respectively, parameterized by the soil’s Young modulus and Poisson ratio. The resulting footprint is efficiently applied to the terrain through procedural deformations of refined terrain patches, while the addition of a simple controller on top of a kinematic character enables capturing the effect of ground deformation on the character’s gait. As our results show, the resulting footprints greatly improve visual realism, while ground compression results in consistent changes in the character’s motion. Readily applicable to any locomotion gait and soft soil material, our real-time model is ideal for enhancing the visual realism of outdoor scenes in video games and virtual reality applications.}
+@article{10.3389/frvir.2022.801856,
+title = {Real-Time Locomotion on Soft Grounds With Dynamic Footprints},
+author = {Alvarado, Eduardo and Paliard, Chloé and Rohmer, Damien and Cani, Marie-Paule},
+doi = {10.3389/FRVIR.2022.801856},
+journal = {Frontiers in Virtual Reality},
+volume = {3},
+pages = {3},
+year = {2022},
+month = {mar},
+copyright = {All rights reserved},
+issn = {2673-4192},
+url = {https://hal.inria.fr/hal-03630136},
+urldate = {2022-04-05}
 }
 ```
 
